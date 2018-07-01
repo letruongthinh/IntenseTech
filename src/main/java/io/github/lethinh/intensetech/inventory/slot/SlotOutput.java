@@ -1,0 +1,24 @@
+/**
+* Created by Le Thinh
+*/
+
+package io.github.lethinh.intensetech.inventory.slot;
+
+import javax.annotation.Nonnull;
+
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.SlotItemHandler;
+
+public class SlotOutput extends SlotItemHandler {
+
+	public SlotOutput(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+		super(itemHandler, index, xPosition, yPosition);
+	}
+
+	@Override
+	public boolean isItemValid(@Nonnull ItemStack stack) {
+		return false;
+	}
+
+}
