@@ -32,7 +32,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-// Only supports Item for now
+// Only supports Item for now. Block is still an unstable model
 public class ModelBakeHandler {
 
 	private static final Multimap<ItemBase, TextureAtlasSprite> ITEMS_SPRITES = HashMultimap.create();
