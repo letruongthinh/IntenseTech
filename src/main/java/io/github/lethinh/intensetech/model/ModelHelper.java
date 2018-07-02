@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
@@ -27,6 +28,8 @@ import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 
 public class ModelHelper {
+
+	public static final ModelResourceLocation MISSING_MODEL = new ModelResourceLocation("builtin/missing", "missing");
 
 	private static final EnumFacing[] HORIZONTALS = { EnumFacing.UP, EnumFacing.DOWN };
 	private static final EnumFacing[] VERTICALS = { EnumFacing.WEST, EnumFacing.EAST };

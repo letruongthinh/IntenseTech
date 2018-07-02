@@ -33,7 +33,7 @@ public abstract class ItemBase extends Item implements ITabSort, IModelRegister,
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerModel() {
-		ModelResourceLocation model = new ModelResourceLocation(getRegistryName(), "");
+		ModelResourceLocation model = new ModelResourceLocation(getRegistryName(), "inventory");
 		ModelLoader.setCustomModelResourceLocation(this, 0, model);
 		ModelLoader.setCustomMeshDefinition(this, stack -> model);
 	}

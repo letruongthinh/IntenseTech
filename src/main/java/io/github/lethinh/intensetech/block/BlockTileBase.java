@@ -18,7 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class BlockTileBase<TE extends TileBase> extends BlockBase {
+public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 
 	public BlockTileBase(String name, Material materialIn) {
 		super(name, materialIn);

@@ -32,7 +32,7 @@ public class TileInventoryBase<I extends TileItemHandler> extends TileBase {
 	 * {@code facing} argument.
 	 */
 	public I getInventory() {
-		return (I) new TileItemHandler(this, size);
+		return (I) getItemHandler(null);
 	}
 
 	@Override
