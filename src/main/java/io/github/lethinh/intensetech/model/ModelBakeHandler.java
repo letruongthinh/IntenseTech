@@ -95,11 +95,6 @@ public class ModelBakeHandler {
 				e.printStackTrace();
 			}
 
-			// List<Variant> normalVars =
-			// definition.getVariant(normal.getVariant()).getVariantList();
-			// List<Variant> invVars =
-			// definition.getVariant(inventory.getVariant()).getVariantList();
-
 			try {
 				modelRegistry.putObject(normal, new FlatBakedBlockstateModel(false, block.isGui3d(), sprite,
 						definition.getVariant(normal.getVariant())));
@@ -113,42 +108,6 @@ public class ModelBakeHandler {
 			SimpleBakedItemModel itemBlockModel = new SimpleBakedItemModel(false, block.isGui3d(), sprite);
 			ModelResourceLocation modelLocation = new ModelResourceLocation(block.getRegistryName(), "inventory");
 			modelRegistry.putObject(modelLocation, itemBlockModel);
-
-//			IModel normalModel = ModelLoaderRegistry.getModelOrLogError(normal,
-//					"Model: " + normal.getResourcePath() + " was not found!");
-//			IModel inventoryModel = ModelLoaderRegistry.getModelOrLogError(inventory,
-//					"Model: " + inventory.getResourcePath() + " was not found!");
-//
-//			for (Variant var : normalVars) {
-//				normalModel = var.process(normalModel);
-//				modelRegistry.putObject(normal,
-//						normalModel.bake(VariantHelper.DEFAULT_BLOCK, DefaultVertexFormats.BLOCK,
-//								ModelLoader.defaultTextureGetter()));
-//			}
-//
-//			for (Variant var : invVars) {
-//				inventoryModel = var.process(inventoryModel);
-//				modelRegistry.putObject(inventory,
-//						inventoryModel.bake(VariantHelper.DEFAULT_BLOCK, DefaultVertexFormats.BLOCK,
-//								ModelLoader.defaultTextureGetter()));
-//			}
-
-//			try {
-//				Class<?> weightedModelClazz = Class
-//						.forName("net.minecraftforge.client.model.ModelLoader$WeightedRandomModel");
-//				Constructor<?> constructor = weightedModelClazz.getDeclaredConstructor(ModelLoader.class,
-//						ResourceLocation.class, VariantList.class);
-//				constructor.setAccessible(true);
-//				Object weightedModelNormal = constructor.newInstance(event.getModelLoader(), normal,
-//						modelDefinition.getDefinition().getVariant(normal.getVariant()));
-//				Object weightedModelInv = constructor.newInstance(event.getModelLoader(), inventory,
-//						modelDefinition.getDefinition().getVariant(inventory.getVariant()));
-//
-//
-//			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
-//					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-//				e.printStackTrace();
-//			}
 		}
 	}
 
