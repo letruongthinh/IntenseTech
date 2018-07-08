@@ -32,7 +32,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-// Item model is the most unstableone for now. Blockstate model has worked out, but in inventory doesn't.
+// Item model is the stablest one for now. Blockstate model has worked out, but in inventory doesn't.
 public class ModelBakeHandler {
 
 	private static final Multimap<ItemBase, TextureAtlasSprite> ITEMS_SPRITES = HashMultimap.create();
