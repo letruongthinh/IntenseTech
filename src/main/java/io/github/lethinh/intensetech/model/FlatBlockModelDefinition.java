@@ -5,7 +5,6 @@
 package io.github.lethinh.intensetech.model;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import io.github.lethinh.intensetech.api.utils.ConstFunctionUtils;
+import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.renderer.block.model.VariantList;
@@ -31,10 +30,6 @@ public class FlatBlockModelDefinition {
 	private final String texture;
 	private final boolean uvLock, smooth, gui3d;
 
-	public FlatBlockModelDefinition(String texture) {
-		this(texture, false, false, true);
-	}
-
 	public FlatBlockModelDefinition(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
 		this.texture = texture;
 		this.uvLock = uvLock;
@@ -47,7 +42,7 @@ public class FlatBlockModelDefinition {
 				.prefixResourceLocation("blockstates/" + texture + ".json");
 		ResourceLocation parent = new ResourceLocation("block/cube_all");
 
-		Optional<IModelState> state = Optional
+		Optional<IModelState> transform = Optional
 				.of(TRSRTransformation.blockCenterToCorner(
 						VariantHelper.DEFAULT_BLOCK.apply(Optional.empty()).orElse(TRSRTransformation.identity())));
 		List<Variant> mcVars = Lists.newArrayList();
@@ -60,15 +55,14 @@ public class FlatBlockModelDefinition {
 					ResourceLocation.class, IModelState.class, boolean.class, boolean.class, boolean.class, int.class,
 					ImmutableMap.class, ImmutableMap.class, ImmutableMap.class);
 			constructor.setAccessible(true);
-			Object var = constructor.newInstance(
+			Variant var = (Variant) constructor.newInstance(
 					blockstateLocation, parent,
-					state.orElse(TRSRTransformation.identity()), uvLock, smooth, gui3d, weight,
+					transform.orElse(TRSRTransformation.identity()), uvLock, smooth, gui3d, weight,
 					ImmutableMap.<String, String>of("all",
 							ConstFunctionUtils.prefixResourceLocation("blocks/" + texture).toString()),
 					ImmutableMap.<String, SubModel>of(), ImmutableMap.<String, String>of());
-			mcVars.add((Variant) var);
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
-				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			mcVars.add(var);
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 

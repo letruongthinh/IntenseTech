@@ -318,6 +318,7 @@ public class ModelHelper {
 	private static void putVertex(UnpackedBakedQuad.Builder builder, VertexFormat format,
 			Optional<TRSRTransformation> transform, EnumFacing side, float x, float y, float z, float u, float v) {
 		Vector4f vec = new Vector4f();
+
 		for (int e = 0; e < format.getElementCount(); e++) {
 			switch (format.getElement(e).getUsage()) {
 			case POSITION:

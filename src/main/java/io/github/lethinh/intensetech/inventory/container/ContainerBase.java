@@ -8,22 +8,23 @@ import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
 
-import io.github.lethinh.intensetech.tile.TileInventoryBase;
+import io.github.lethinh.intensetech.tile.TileBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
-public class ContainerBase<TE extends TileInventoryBase> extends Container {
+public class ContainerBase<TE extends TileBase> extends Container {
 
 	private final int inventoryStart, playerInventoryStart, playerInventoryEnd;
 	private final TE tile;
 
 	public ContainerBase(InventoryPlayer inventoryPlayer, TE tile) {
 		// The size of the inventory
-		this.inventoryStart = tile.getInventory().getSlots();
+		this.inventoryStart = tile.getItemHandler(EnumFacing.NORTH).getSlots();
 		// The player inventory (without the hotbar)
 		this.playerInventoryStart = inventoryStart + 27;
 		// The player inventory (with the hotbar)

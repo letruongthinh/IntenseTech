@@ -4,7 +4,9 @@
 
 package io.github.lethinh.intensetech;
 
+import io.github.lethinh.intensetech.creativetab.CreativeTab;
 import io.github.lethinh.intensetech.proxy.CommonProxy;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -38,6 +40,10 @@ public class IntenseTech {
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
 		proxy.init();
+	}
+
+	public static boolean isDevEnv() {
+		return (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 	}
 
 }

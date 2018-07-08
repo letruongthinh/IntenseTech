@@ -5,9 +5,9 @@
 package io.github.lethinh.intensetech.item;
 
 import io.github.lethinh.intensetech.IntenseTech;
-import io.github.lethinh.intensetech.api.provider.IItemModelProperties;
-import io.github.lethinh.intensetech.api.provider.IModelRegister;
-import io.github.lethinh.intensetech.api.provider.ITabSort;
+import io.github.lethinh.intensetech.creativetab.ITabSort;
+import io.github.lethinh.intensetech.model.IItemModelProperties;
+import io.github.lethinh.intensetech.model.IModelRegister;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;

@@ -13,13 +13,14 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.IItemHandler;
 
 public class TileBase extends TileEntity {
 
@@ -47,8 +48,12 @@ public class TileBase extends TileEntity {
 	@Override
 	public void markDirty() {
 		super.markDirty();
+		notifyBlockUpdate();
+	}
+
+	protected void notifyBlockUpdate() {
 		IBlockState state = world.getBlockState(pos);
-		world.notifyBlockUpdate(pos, state, state, 2);
+		world.notifyBlockUpdate(pos, state, state, 3);
 	}
 
 	/* Capability */
@@ -57,7 +62,7 @@ public class TileBase extends TileEntity {
 	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
 		if (facing != null) {
 			if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-				IItemHandlerModifiable itemHandler = getItemHandler(facing);
+				IItemHandler itemHandler = getItemHandler(facing);
 
 				if (itemHandler != null) {
 					return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(itemHandler);
@@ -80,33 +85,44 @@ public class TileBase extends TileEntity {
 		return super.getCapability(capability, facing);
 	}
 
-	public IItemHandlerModifiable getItemHandler(EnumFacing facing) {
+	@Nullable
+	public IItemHandler getItemHandler(@Nullable EnumFacing facing) {
 		return null;
 	}
 
-	public IFluidHandler getFluidHandler(EnumFacing facing) {
+	@Nullable
+	public IFluidHandler getFluidHandler(@Nullable EnumFacing facing) {
 		return null;
 	}
 
-	public IEnergyStorage getEnergyHandler(EnumFacing facing) {
+	@Nullable
+	public IEnergyStorage getEnergyHandler(@Nullable EnumFacing facing) {
 		return null;
 	}
 
-	/* Validate Helper */
+	/* Helper */
 	public boolean isTileInvalid() {
 		return !hasWorld() || isInvalid() || !world.isBlockLoaded(pos) || world.getTileEntity(pos) != this;
 	}
 
-	/* Reinforcements */
+	/* Object */
 	@Override
 	public boolean equals(Object o) {
-		return o instanceof TileBase && ((TileBase) o).pos.equals(pos)
-				&& ((TileBase) o).getWorld().provider.getDimensionType() == world.provider.getDimensionType();
+		return o instanceof TileEntity ? ((TileEntity) o).getPos().equals(pos)
+				&& ((TileEntity) o).getWorld().provider.getDimensionType() == world.provider.getDimensionType()
+				: super.equals(o);
 	}
 
 	@Override
 	public int hashCode() {
 		return 31 * pos.hashCode() + world.provider.getDimension();
+	}
+
+	/* Block Impl */
+	public void onNeighborTileChange(BlockPos neighbor) {
+	}
+
+	public void onNeighborBlockChange() {
 	}
 
 }

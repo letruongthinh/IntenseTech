@@ -6,9 +6,9 @@ package io.github.lethinh.intensetech.recipe;
 
 import javax.annotation.Nonnull;
 
-import io.github.lethinh.intensetech.api.capability.CraftMatrixItemHandler;
-import io.github.lethinh.intensetech.api.utils.ConstFunctionUtils;
+import io.github.lethinh.intensetech.capability.CraftMatrixItemHandler;
 import io.github.lethinh.intensetech.manager.RecipesManager;
+import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
