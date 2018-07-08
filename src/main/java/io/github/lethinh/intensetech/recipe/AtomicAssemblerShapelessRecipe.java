@@ -10,9 +10,9 @@ import javax.annotation.Nonnull;
 
 import com.google.common.collect.Lists;
 
-import io.github.lethinh.intensetech.api.capability.CraftMatrixItemHandler;
-import io.github.lethinh.intensetech.api.utils.ConstFunctionUtils;
+import io.github.lethinh.intensetech.capability.CraftMatrixItemHandler;
 import io.github.lethinh.intensetech.manager.RecipesManager;
+import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.block.Block;
 import net.minecraft.client.util.RecipeItemHelper;
 import net.minecraft.item.Item;

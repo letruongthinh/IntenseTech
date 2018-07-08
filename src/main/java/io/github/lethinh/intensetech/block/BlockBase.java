@@ -5,9 +5,9 @@
 package io.github.lethinh.intensetech.block;
 
 import io.github.lethinh.intensetech.IntenseTech;
-import io.github.lethinh.intensetech.api.provider.IBlockModelProperties;
-import io.github.lethinh.intensetech.api.provider.IModelRegister;
-import io.github.lethinh.intensetech.api.provider.ITabSort;
+import io.github.lethinh.intensetech.creativetab.ITabSort;
+import io.github.lethinh.intensetech.model.IBlockModelProperties;
+import io.github.lethinh.intensetech.model.IModelRegister;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -50,6 +50,12 @@ public class BlockBase extends Block implements ITabSort, IModelRegister, IBlock
 	/* IBlockModelProperties */
 	@SideOnly(Side.CLIENT)
 	@Override
+	public String getTexture() {
+		return name;
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
 	public boolean isUvLock() {
 		return false;
 	}
@@ -68,8 +74,8 @@ public class BlockBase extends Block implements ITabSort, IModelRegister, IBlock
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public String getTexture() {
-		return name;
+	public boolean isAmbientOcclusion() {
+		return false;
 	}
 
 }

@@ -8,9 +8,9 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import io.github.lethinh.intensetech.api.provider.IModelRegister;
 import io.github.lethinh.intensetech.item.ItemBase;
 import io.github.lethinh.intensetech.item.ItemSilverIngot;
+import io.github.lethinh.intensetech.model.IModelRegister;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;

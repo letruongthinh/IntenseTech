@@ -5,7 +5,7 @@
 package io.github.lethinh.intensetech.inventory.gui;
 
 import io.github.lethinh.intensetech.inventory.container.ContainerAtomicAssembler;
-import io.github.lethinh.intensetech.tile.crafter.TileAtomicAssembler;
+import io.github.lethinh.intensetech.tile.TileAtomicAssembler;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

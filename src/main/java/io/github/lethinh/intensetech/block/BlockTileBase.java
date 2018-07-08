@@ -4,19 +4,31 @@
 
 package io.github.lethinh.intensetech.block;
 
+import java.util.Random;
+import java.util.stream.IntStream;
+
+import javax.annotation.Nullable;
+
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.inventory.GuiHandler;
 import io.github.lethinh.intensetech.tile.TileBase;
+import io.github.lethinh.intensetech.tile.TileInventoryBase;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving.SpawnPlacementType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.items.IItemHandler;
 
 public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 
@@ -25,6 +37,28 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 	}
 
 	/* Block */
+	@Override
+	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+		TileEntity tile = world.getTileEntity(pos);
+
+		if (!(tile instanceof TileBase)) {
+			return;
+		}
+
+		((TileBase) tile).onNeighborTileChange(neighbor);
+	}
+
+	@Override
+	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		TileEntity tile = worldIn.getTileEntity(pos);
+
+		if (!(tile instanceof TileBase)) {
+			return;
+		}
+
+		((TileBase) tile).onNeighborBlockChange();
+	}
+
 	@Override
 	public boolean canCreatureSpawn(IBlockState state, IBlockAccess world, BlockPos pos, SpawnPlacementType type) {
 		return false;
@@ -54,9 +88,39 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 	}
 
 	@Override
+	public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
+		if (!player.capabilities.isCreativeMode) {
+			dropBlockAsItem(worldIn, pos, state, 0);
+			worldIn.destroyBlock(pos, true);
+		}
+	}
+
+	@Override
 	public boolean eventReceived(IBlockState state, World worldIn, BlockPos pos, int id, int param) {
 		TileEntity tile = worldIn.getTileEntity(pos);
 		return tile == null ? super.eventReceived(state, worldIn, pos, id, param) : tile.receiveClientEvent(id, param);
+	}
+
+	@Override
+	public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state,
+			int fortune) {
+		TileEntity tile = world.getTileEntity(pos);
+
+		if (tile == null) {
+			return;
+		}
+
+		if (!(tile instanceof TileInventoryBase)) {
+			return;
+		}
+
+		IItemHandler itemHandler = ((TileInventoryBase) tile).inventory;
+		NonNullList<ItemStack> inventory = NonNullList.withSize(itemHandler.getSlots(), ItemStack.EMPTY);
+		IntStream.range(0, itemHandler.getSlots()).forEach(i -> inventory.set(i, itemHandler.getStackInSlot(i)));
+
+		NBTTagCompound stackTag = new NBTTagCompound();
+		stackTag.setTag("BlockEntityTag", ItemStackHelper.saveAllItems(new NBTTagCompound(), inventory));
+		drops.add(new ItemStack(getItemDropped(state, new Random(), fortune), 1, damageDropped(state), stackTag));
 	}
 
 	/* ITabSort */
@@ -70,5 +134,13 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 	public boolean hasTileEntity(IBlockState state) {
 		return true;
 	}
+
+	@Nullable
+	@Override
+	public TileEntity createTileEntity(World world, IBlockState state) {
+		return createTileEntity((IBlockAccess) world, state);
+	}
+
+	public abstract TileEntity createTileEntity(IBlockAccess world, IBlockState state);
 
 }

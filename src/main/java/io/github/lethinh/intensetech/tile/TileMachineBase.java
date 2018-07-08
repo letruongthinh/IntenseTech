@@ -4,11 +4,9 @@
 
 package io.github.lethinh.intensetech.tile;
 
-import io.github.lethinh.intensetech.api.capability.EnergyStorageModifiable;
-import io.github.lethinh.intensetech.api.capability.TileItemHandler;
-import io.github.lethinh.intensetech.api.provider.IEnergyStorageModifiable;
-import io.github.lethinh.intensetech.api.provider.IGuiTile;
-import io.github.lethinh.intensetech.api.provider.IMachineTile;
+import io.github.lethinh.intensetech.capability.EnergyStorageModifiable;
+import io.github.lethinh.intensetech.capability.IEnergyStorageModifiable;
+import io.github.lethinh.intensetech.capability.TileItemHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -20,6 +18,26 @@ public abstract class TileMachineBase<I extends TileItemHandler> extends TileInv
 	private final EnergyStorageModifiable energyStorage;
 	private boolean active = false;
 	private int workCycles = 0;
+
+	public TileMachineBase(I inventory, int capacity) {
+		super(inventory);
+		energyStorage = new EnergyStorageModifiable(capacity);
+	}
+
+	public TileMachineBase(I inventory, int capacity, int maxTransfer) {
+		super(inventory);
+		energyStorage = new EnergyStorageModifiable(capacity, maxTransfer);
+	}
+
+	public TileMachineBase(I inventory, int capacity, int maxReceive, int maxExtract) {
+		super(inventory);
+		energyStorage = new EnergyStorageModifiable(capacity, maxReceive, maxExtract);
+	}
+
+	public TileMachineBase(I inventory, int capacity, int maxReceive, int maxExtract, int energy) {
+		super(inventory);
+		energyStorage = new EnergyStorageModifiable(capacity, maxReceive, maxExtract, energy);
+	}
 
 	public TileMachineBase(int size, int capacity) {
 		super(size);

@@ -4,16 +4,16 @@
 
 package io.github.lethinh.intensetech.inventory.gui;
 
-import io.github.lethinh.intensetech.api.utils.ConstFunctionUtils;
 import io.github.lethinh.intensetech.inventory.container.ContainerBase;
-import io.github.lethinh.intensetech.tile.TileInventoryBase;
+import io.github.lethinh.intensetech.tile.TileBase;
+import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class GuiBase<TE extends TileInventoryBase, C extends ContainerBase<TE>> extends GuiContainer {
+public class GuiBase<TE extends TileBase, C extends ContainerBase<TE>> extends GuiContainer {
 
 	private final String guiName;
 
@@ -21,6 +21,13 @@ public class GuiBase<TE extends TileInventoryBase, C extends ContainerBase<TE>> 
 		super(inventorySlotsIn);
 		this.guiName = guiName;
 		setGuiContainerSize(GuiContainerSize.DEFAULT);
+	}
+
+	@Override
+	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		drawDefaultBackground();
+		super.drawScreen(mouseX, mouseY, partialTicks);
+		renderHoveredToolTip(mouseX, mouseY);
 	}
 
 	@Override
@@ -55,7 +62,7 @@ public class GuiBase<TE extends TileInventoryBase, C extends ContainerBase<TE>> 
 	}
 
 	// Some ordinary gui container sizes
-	public enum GuiContainerSize {
+	enum GuiContainerSize {
 		DEFAULT(176, 166),
 		MEDIUM(186, 186),
 		MEDIUM_X(186, 176),

@@ -4,9 +4,9 @@
 
 package io.github.lethinh.intensetech.inventory.container;
 
-import io.github.lethinh.intensetech.api.capability.CraftMatrixItemHandler;
+import io.github.lethinh.intensetech.capability.CraftMatrixItemHandler;
 import io.github.lethinh.intensetech.inventory.slot.SlotOutput;
-import io.github.lethinh.intensetech.tile.crafter.TileAtomicAssembler;
+import io.github.lethinh.intensetech.tile.TileAtomicAssembler;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraftforge.items.SlotItemHandler;
 
@@ -20,7 +20,7 @@ public class ContainerAtomicAssembler extends ContainerBase<TileAtomicAssembler>
 
 		// Add craft matrix
 		int x = 12, y = 17;
-		CraftMatrixItemHandler craftMatrix = tile.getInventory();
+		CraftMatrixItemHandler craftMatrix = tile.inventory;
 
 		for (int subX = 0; subX < craftMatrix.getWidth(); ++subX) {
 			for (int subY = 0; subY < craftMatrix.getHeight(); ++subY) {

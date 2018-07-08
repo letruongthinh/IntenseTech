@@ -4,7 +4,7 @@
 
 package io.github.lethinh.intensetech.inventory;
 
-import io.github.lethinh.intensetech.api.provider.IGuiTile;
+import io.github.lethinh.intensetech.tile.IGuiTile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;

@@ -1,30 +1,29 @@
 /**
-* Created by Le Thinh
-*/
+ * Created by Le Thinh
+ */
 
-package io.github.lethinh.intensetech.tile;
+package io.github.lethinh.intensetech.tile.pipe.item;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.github.lethinh.intensetech.capability.TileItemHandler;
+import io.github.lethinh.intensetech.tile.pipe.PipeType;
+import io.github.lethinh.intensetech.tile.pipe.TileConnectedPipe;
 import io.github.lethinh.intensetech.utils.InventoryUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.IItemHandler;
 
-public class TileInventoryBase<I extends TileItemHandler> extends TileBase {
+public abstract class TileBasicItemPipe extends TileConnectedPipe<Capability<IItemHandler>> {
 
-	public final I inventory;
+	public final TileItemHandler inventory;
 
-	public TileInventoryBase(int size) {
-		this((I) new TileItemHandler(null, size));
+	public TileBasicItemPipe(int size) {
+		this.inventory = new TileItemHandler(null, size);
 		inventory.setTile(this);
-	}
-
-	public TileInventoryBase(I inventory) {
-		this.inventory = inventory;
 	}
 
 	@Nullable
@@ -76,6 +75,12 @@ public class TileInventoryBase<I extends TileItemHandler> extends TileBase {
 
 	public boolean isFull() {
 		return InventoryUtils.isFull(inventory);
+	}
+
+	/* IPipeModule */
+	@Override
+	public PipeType<Capability<IItemHandler>> getPipeType() {
+		return PipeType.ITEM;
 	}
 
 }

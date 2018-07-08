@@ -10,9 +10,9 @@ import javax.annotation.Nonnull;
 
 import com.google.common.collect.Lists;
 
-import io.github.lethinh.intensetech.api.utils.OreDictUtils;
 import io.github.lethinh.intensetech.recipe.AtomicAssemblerShapedRecipe;
 import io.github.lethinh.intensetech.recipe.AtomicAssemblerShapelessRecipe;
+import io.github.lethinh.intensetech.utils.OreDictUtils;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
