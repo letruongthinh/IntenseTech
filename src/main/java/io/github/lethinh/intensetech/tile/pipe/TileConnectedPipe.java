@@ -4,7 +4,6 @@
 
 package io.github.lethinh.intensetech.tile.pipe;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,12 +11,10 @@ import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.tile.TileBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
 
 public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 		implements IPipeModule<C> {
@@ -35,69 +32,76 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 		super.readFromNBT(compound);
 
 		// Adjacent tiles
-		NBTTagList tileTagList = compound.getTagList("Tiles", Constants.NBT.TAG_COMPOUND);
-
-		if (!tileTagList.hasNoTags()) {
-			adjacentTiles = new ArrayList<>(compound.getInteger("TilesSize"));
-
-			for (int i = 0; i < tileTagList.tagCount(); ++i) {
-				NBTTagCompound tileTag = tileTagList.getCompoundTagAt(i);
-				int tileIndex = tileTag.getInteger("TileIndex");
-
-				if (tileIndex > 0 && tileIndex < adjacentTiles.size()) {
-					adjacentTiles.set(tileIndex, TileEntity.create(world, compound));
-				}
-			}
-		}
+//		NBTTagList tileTagList = compound.getTagList("Tiles", Constants.NBT.TAG_COMPOUND);
+//
+//		if (!tileTagList.hasNoTags()) {
+//			adjacentTiles = Lists.newArrayListWithCapacity(compound.getInteger("TilesSize"));
+//
+//			for (int i = 0; i < tileTagList.tagCount(); ++i) {
+//				NBTTagCompound tileTag = tileTagList.getCompoundTagAt(i);
+//				int tileIndex = tileTag.getInteger("TileIndex");
+//				TileEntity tile = TileEntity.create(world, compound);
+//
+//				if (adjacentTiles.contains(tile)) {
+//					continue;
+//				}
+//
+//				if (tileIndex > 0 && tileIndex < adjacentTiles.size()) {
+//					adjacentTiles.set(tileIndex, tile);
+//				}
+//			}
+//		}
 
 		// Adjacent pipes
-		NBTTagList pipeTagList = compound.getTagList("Pipes", Constants.NBT.TAG_COMPOUND);
-
-		if (!pipeTagList.hasNoTags()) {
-			adjacentPipes = new ArrayList<>(compound.getInteger("PipesSize"));
-
-			for (int j = 0; j < pipeTagList.tagCount(); ++j) {
-				NBTTagCompound pipeTag = pipeTagList.getCompoundTagAt(j);
-				int pipeIndex = pipeTag.getInteger("PipeIndex");
-
-				if (pipeIndex > 0 && pipeIndex < adjacentPipes.size()) {
-					adjacentPipes.set(pipeIndex, (TileConnectedPipe<C>) TileEntity.create(world, pipeTag));
-				}
-			}
-		}
+//		NBTTagList pipeTagList = compound.getTagList("Pipes", Constants.NBT.TAG_COMPOUND);
+//
+//		if (!pipeTagList.hasNoTags()) {
+//			adjacentPipes = Lists.newArrayListWithCapacity(compound.getInteger("PipesSize"));
+//
+//			for (int j = 0; j < pipeTagList.tagCount(); ++j) {
+//				NBTTagCompound pipeTag = pipeTagList.getCompoundTagAt(j);
+//				int pipeIndex = pipeTag.getInteger("PipeIndex");
+//				TileConnectedPipe<C> pipe = (TileConnectedPipe<C>) TileEntity.create(world, pipeTag);
+//
+//				if (adjacentPipes.contains(pipe)) {
+//					continue;
+//				}
+//
+//				if (pipeIndex > 0 && pipeIndex < adjacentPipes.size()) {
+//					adjacentPipes.set(pipeIndex, pipe);
+//				}
+//			}
+//		}
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		// Adjacent tiles
-		if (!adjacentTiles.isEmpty()) {
-			NBTTagList tileTagList = new NBTTagList();
-
-			for (int i = 0; i < adjacentTiles.size(); ++i) {
-				NBTTagCompound tileTag = new NBTTagCompound();
-				tileTag.setInteger("TileIndex", i);
-				adjacentTiles.get(i).writeToNBT(tileTag);
-				tileTagList.appendTag(tileTag);
-			}
-
-			compound.setTag("Tiles", tileTagList);
-			compound.setInteger("TilesSize", adjacentTiles.size());
-		}
+//		if (!adjacentTiles.isEmpty()) {
+//			NBTTagList tileTagList = new NBTTagList();
+//
+//			for (int i = 0; i < adjacentTiles.size(); ++i) {
+//				NBTTagCompound tileTag = new NBTTagCompound();
+//				tileTag.setInteger("TileIndex", i);
+//				adjacentTiles.get(i).writeToNBT(tileTag);
+//				tileTagList.appendTag(tileTag);
+//			}
+//
+//			compound.setTag("Tiles", tileTagList);
+//			compound.setInteger("TilesSize", adjacentTiles.size());
+//		}
 
 		// Adjacent pipes
-		if (!adjacentPipes.isEmpty()) {
-			NBTTagList pipeTagList = new NBTTagList();
-
-			for (int i = 0; i < adjacentPipes.size(); ++i) {
-				NBTTagCompound pipeTag = new NBTTagCompound();
-				pipeTag.setInteger("PipeIndex", i);
-				adjacentPipes.get(i).writeToNBT(pipeTag);
-				pipeTagList.appendTag(pipeTag);
-			}
-
-			compound.setTag("Pipes", pipeTagList);
-			compound.setInteger("PipesSize", adjacentPipes.size());
-		}
+		/*
+		 * if (!adjacentPipes.isEmpty()) { NBTTagList pipeTagList = new NBTTagList();
+		 *
+		 * for (int i = 0; i < adjacentPipes.size(); ++i) { NBTTagCompound pipeTag = new
+		 * NBTTagCompound(); pipeTag.setInteger("PipeIndex", i);
+		 * adjacentPipes.get(i).writeToNBT(pipeTag); pipeTagList.appendTag(pipeTag); }
+		 *
+		 * compound.setTag("Pipes", pipeTagList); compound.setInteger("PipesSize",
+		 * adjacentPipes.size()); }
+		 */
 
 		return super.writeToNBT(compound);
 	}

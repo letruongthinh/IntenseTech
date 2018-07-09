@@ -23,27 +23,38 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformT
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class SimpleItemModel implements IBakedModel {
+public class ItemBakedModel implements IBakedModel {
 
 	private final boolean ambientOcclusion, gui3d;
 	private final ItemOverrideList overrides;
+	private final IModelState defaultState;
+	private final VertexFormat format;
 	private final TextureAtlasSprite[] textures;
 
-	public SimpleItemModel(boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite... textures) {
-		this(ambientOcclusion, gui3d, ItemOverrideList.NONE, textures);
+	public ItemBakedModel(boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite... textures) {
+		this(ambientOcclusion, gui3d, VariantHelper.DEFAULT_ITEM, DefaultVertexFormats.ITEM, textures);
 	}
 
-	public SimpleItemModel(boolean ambientOcclusion, boolean gui3d, ItemOverrideList overrides,
+	public ItemBakedModel(boolean ambientOcclusion, boolean gui3d, IModelState defaultState, VertexFormat format,
 			TextureAtlasSprite... textures) {
+		this(ambientOcclusion, gui3d, ItemOverrideList.NONE, defaultState, format, textures);
+	}
+
+	public ItemBakedModel(boolean ambientOcclusion, boolean gui3d, ItemOverrideList overrides,
+			IModelState defaultState, VertexFormat format, TextureAtlasSprite... textures) {
 		this.ambientOcclusion = ambientOcclusion;
 		this.gui3d = gui3d;
 		this.overrides = overrides;
+		this.defaultState = defaultState;
+		this.format = format;
 		this.textures = textures;
 	}
 
@@ -54,11 +65,11 @@ public class SimpleItemModel implements IBakedModel {
 		}
 
 		ImmutableList.Builder<BakedQuad> builder = ImmutableList.builder();
-		Optional<TRSRTransformation> transform = VariantHelper.DEFAULT_ITEM.apply(Optional.empty());
+		Optional<TRSRTransformation> transform = defaultState.apply(Optional.empty());
 
 		for (int i = 0; i < textures.length; ++i) {
 			TextureAtlasSprite texture = textures[i];
-			builder.addAll(ModelHelper.getQuadsForSprite(i, texture, DefaultVertexFormats.ITEM, transform));
+			builder.addAll(ModelHelper.getQuadsForSprite(i, texture, format, transform));
 		}
 
 		return builder.build();
@@ -89,9 +100,13 @@ public class SimpleItemModel implements IBakedModel {
 		return overrides;
 	}
 
+	public IModelState getDefaultState() {
+		return defaultState;
+	}
+
 	@Override
 	public Pair<? extends IBakedModel, Matrix4f> handlePerspective(TransformType cameraTransformType) {
-		return ModelHelper.handlePerspective(this, VariantHelper.DEFAULT_ITEM, cameraTransformType);
+		return ModelHelper.handlePerspective(this, defaultState, cameraTransformType);
 	}
 
 }

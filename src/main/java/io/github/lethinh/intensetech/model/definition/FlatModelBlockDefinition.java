@@ -2,7 +2,7 @@
 * Created by Le Thinh
 */
 
-package io.github.lethinh.intensetech.model;
+package io.github.lethinh.intensetech.model.definition;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import io.github.lethinh.intensetech.model.VariantHelper;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.Variant;
@@ -21,23 +22,27 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.BlockStateLoader.SubModel;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * Simple wrapper for {@link ModelBlockDefinition}
+ * Wrapper for {@link ModelBlockDefinition}. Represent for a "cube-all", which
+ * means same textures on all sides block.
  */
-public class FlatBlockModelDefinition {
+@SideOnly(Side.CLIENT)
+public class FlatModelBlockDefinition {
 
 	private final String texture;
 	private final boolean uvLock, smooth, gui3d;
 
-	public FlatBlockModelDefinition(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
+	public FlatModelBlockDefinition(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
 		this.texture = texture;
 		this.uvLock = uvLock;
 		this.smooth = smooth;
 		this.gui3d = gui3d;
 	}
 
-	public ModelBlockDefinition getDefinition() {
+	public ModelBlockDefinition create() {
 		ResourceLocation blockstateLocation = ConstFunctionUtils
 				.prefixResourceLocation("blockstates/" + texture + ".json");
 		ResourceLocation parent = new ResourceLocation("block/cube_all");

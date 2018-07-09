@@ -14,8 +14,11 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformT
 import net.minecraftforge.client.model.SimpleModelState;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 // TRSR = Translation Rotation Scale Rotation
+@SideOnly(Side.CLIENT)
 public class VariantHelper {
 
 	private static TRSRTransformation get(float tx, float ty, float tz, float ax, float ay, float az, float s) {

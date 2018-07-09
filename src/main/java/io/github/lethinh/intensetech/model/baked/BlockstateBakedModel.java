@@ -37,8 +37,13 @@ import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+/**
+ * A blockstate model which is baked from a built-in {@link IModel} instance.
+ * The instance is created using the {@link ResourceLocation} of the
+ * {@link Variant}
+ */
 @SideOnly(Side.CLIENT)
-public class FlatBlockstateModel implements IBakedModel {
+public class BlockstateBakedModel implements IBakedModel {
 
 	private final boolean ambientOcclusion, gui3d;
 	private final TextureAtlasSprite texture;
@@ -46,8 +51,7 @@ public class FlatBlockstateModel implements IBakedModel {
 	private final List<IModel> models;
 	private final IModelState modelState;
 
-	public FlatBlockstateModel(boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite texture,
-			VariantList variants) throws Exception {
+	public BlockstateBakedModel(boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite texture, VariantList variants) {
 		this.ambientOcclusion = ambientOcclusion;
 		this.gui3d = gui3d;
 		this.texture = texture;
@@ -68,7 +72,7 @@ public class FlatBlockstateModel implements IBakedModel {
 				// explicit missing location, happens if blockstate has "model"=null
 				model = ModelLoaderRegistry.getMissingModel();
 			} else {
-				model = ModelLoaderRegistry.getModel(loc);
+				model = ModelLoaderRegistry.getModelOrLogError(loc, "IModel instance was't found!");
 			}
 
 			// FIXME: is this the place? messes up dependency and texture resolution
@@ -99,25 +103,26 @@ public class FlatBlockstateModel implements IBakedModel {
 
 	@Override
 	public List<BakedQuad> getQuads(@Nullable IBlockState blockState, @Nullable EnumFacing side, long rand) {
-		VertexFormat format = DefaultVertexFormats.ITEM; // Forge uses this
+		VertexFormat format = DefaultVertexFormats.ITEM; // Forge uses this, may be it's just simply brighter
 
 		if (variants.size() == 1) {
 			IModel model = models.get(0);
-			return model.bake(MultiModelState.getPartState(modelState, model, 0), format,
-					ModelLoader.defaultTextureGetter()).getQuads(blockState, side, rand);
+			IBakedModel bakedModel = model.bake(MultiModelState.getPartState(modelState, model, 0), format,
+					ModelLoader.defaultTextureGetter());
+			return bakedModel.getQuads(blockState, side, rand);
 		}
 
 		WeightedBakedModel.Builder builder = new WeightedBakedModel.Builder();
 
 		for (int i = 0; i < variants.size(); ++i) {
 			IModel model = models.get(i);
-			builder.add(
-					model.bake(MultiModelState.getPartState(modelState, model, i), format,
-							ModelLoader.defaultTextureGetter()),
-					variants.get(i).getWeight());
+			IBakedModel bakedModel = model.bake(MultiModelState.getPartState(modelState, model, i), format,
+					ModelLoader.defaultTextureGetter());
+			builder.add(bakedModel, variants.get(i).getWeight());
 		}
 
-		return builder.build().getQuads(blockState, side, rand);
+		WeightedBakedModel ret = builder.build();
+		return ret.getQuads(blockState, side, rand);
 	}
 
 	@Override

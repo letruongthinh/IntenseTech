@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.item.ItemBase;
 import io.github.lethinh.intensetech.item.ItemSilverIngot;
-import io.github.lethinh.intensetech.model.IModelRegister;
+import io.github.lethinh.intensetech.model.IItemModelRegister;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
@@ -25,8 +25,8 @@ public class ItemsManager {
 	public static void registerItems() {
 		ITEMS.add(silverIngot = new ItemSilverIngot());
 
-		ITEMS.forEach(IModelRegister::registerModel);
 		MinecraftForge.EVENT_BUS.register(new RegistrationHandler());
+		ITEMS.forEach(IItemModelRegister::registerItemModel);
 	}
 
 	public static class RegistrationHandler {

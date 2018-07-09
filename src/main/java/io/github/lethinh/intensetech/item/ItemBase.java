@@ -7,14 +7,14 @@ package io.github.lethinh.intensetech.item;
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.creativetab.ITabSort;
 import io.github.lethinh.intensetech.model.IItemModelProperties;
-import io.github.lethinh.intensetech.model.IModelRegister;
+import io.github.lethinh.intensetech.model.IItemModelRegister;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class ItemBase extends Item implements ITabSort, IModelRegister, IItemModelProperties {
+public abstract class ItemBase extends Item implements ITabSort, IItemModelRegister, IItemModelProperties {
 
 	public ItemBase(String name) {
 		setRegistryName(IntenseTech.MOD_ID, name);
@@ -25,14 +25,14 @@ public abstract class ItemBase extends Item implements ITabSort, IModelRegister,
 
 	/* ITabSort */
 	@Override
-	public CreativeTabCategory getTabCategory() {
-		return CreativeTabCategory.ITEM;
+	public int getCategory() {
+		return ITEM;
 	}
 
-	/* IModelRegister */
+	/* IItemModelRegister */
 	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerModel() {
+	public void registerItemModel() {
 		ModelResourceLocation model = new ModelResourceLocation(getRegistryName(), "inventory");
 		ModelLoader.setCustomModelResourceLocation(this, 0, model);
 		ModelLoader.setCustomMeshDefinition(this, stack -> model);

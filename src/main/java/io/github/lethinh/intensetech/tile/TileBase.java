@@ -51,11 +51,6 @@ public class TileBase extends TileEntity {
 		notifyBlockUpdate();
 	}
 
-	protected void notifyBlockUpdate() {
-		IBlockState state = world.getBlockState(pos);
-		world.notifyBlockUpdate(pos, state, state, 3);
-	}
-
 	/* Capability */
 	@Nullable
 	@Override
@@ -100,9 +95,14 @@ public class TileBase extends TileEntity {
 		return null;
 	}
 
-	/* Helper */
+	/* Helpers */
 	public boolean isTileInvalid() {
 		return !hasWorld() || isInvalid() || !world.isBlockLoaded(pos) || world.getTileEntity(pos) != this;
+	}
+
+	protected void notifyBlockUpdate() {
+		IBlockState state = world.getBlockState(pos);
+		world.notifyBlockUpdate(pos, state, state, 3);
 	}
 
 	/* Object */

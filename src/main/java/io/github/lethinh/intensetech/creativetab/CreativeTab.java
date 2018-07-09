@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import io.github.lethinh.intensetech.IntenseTech;
-import io.github.lethinh.intensetech.creativetab.ITabSort.CreativeTabCategory;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -67,23 +66,23 @@ public class CreativeTab extends CreativeTabs {
 		@Override
 		public int compare(ItemStack o1, ItemStack o2) {
 			Item item1 = o1.getItem(), item2 = o2.getItem();
-			CreativeTabCategory c1 = CreativeTabCategory.ITEM, c2 = CreativeTabCategory.ITEM;
+			int c1 = ITabSort.ITEM, c2 = ITabSort.ITEM;
 
 			if (item1 instanceof ITabSort) {
-				c1 = ((ITabSort) item1).getTabCategory();
+				c1 = ((ITabSort) item1).getCategory();
 			}
 
 			if (item2 instanceof ITabSort) {
-				c2 = ((ITabSort) item2).getTabCategory();
+				c2 = ((ITabSort) item2).getCategory();
 			}
 
-			if (c1.getCategoryIndex() > c2.getCategoryIndex()) {
+			if (c1 > c2) {
 				// If c1 is greater than c2, it will sort sort item1 before item2.
 				// For example: If I had item A in category 1 and B item category 2, it would
 				// sort B item before A item
 				// (Natural number order).
 				return 1;
-			} else if (c2.getCategoryIndex() > c1.getCategoryIndex()) {
+			} else if (c2 > c1) {
 				// If c2 is greater than c1, it will sort item2 before item.
 				// For example: If I had item A in category 2 and B item category 1, it would
 				// sort A item before B item

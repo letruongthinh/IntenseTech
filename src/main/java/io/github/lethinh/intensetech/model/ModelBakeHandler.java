@@ -17,22 +17,27 @@ import io.github.lethinh.intensetech.block.BlockBase;
 import io.github.lethinh.intensetech.item.ItemBase;
 import io.github.lethinh.intensetech.manager.BlocksManager;
 import io.github.lethinh.intensetech.manager.ItemsManager;
-import io.github.lethinh.intensetech.model.baked.FlatBlockstateModel;
-import io.github.lethinh.intensetech.model.baked.SimpleItemModel;
+import io.github.lethinh.intensetech.model.baked.BlockstateBakedModel;
+import io.github.lethinh.intensetech.model.baked.ItemBlockBakedModel;
+import io.github.lethinh.intensetech.model.baked.ItemBakedModel;
+import io.github.lethinh.intensetech.model.definition.FlatModelBlockDefinition;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-// Item model is the stablest one for now. Blockstate model has worked out, but in inventory doesn't.
+@SideOnly(Side.CLIENT)
 public class ModelBakeHandler {
 
 	private static final Multimap<ItemBase, TextureAtlasSprite> ITEMS_SPRITES = HashMultimap.create();
@@ -42,47 +47,51 @@ public class ModelBakeHandler {
 	public void onPreTextureStitch(TextureStitchEvent.Pre event) {
 		TextureMap textureMap = event.getMap();
 
+		// Items
 		for (ItemBase item : ItemsManager.ITEMS) {
 			for (String texture : item.getTextures()) {
-				ResourceLocation location = ConstFunctionUtils.prefixResourceLocation("items/" + texture);
-				TextureAtlasSprite sprite = textureMap.registerSprite(location);
+				ResourceLocation loc = ConstFunctionUtils.prefixResourceLocation("items/" + texture);
+				TextureAtlasSprite sprite = textureMap.registerSprite(loc);
 				ITEMS_SPRITES.put(item, sprite);
 			}
 		}
 
+		// Blocks
 		for (BlockBase block : BlocksManager.BLOCKS) {
-			ResourceLocation location = ConstFunctionUtils.prefixResourceLocation("blocks/" + block.getTexture());
-			TextureAtlasSprite sprite = textureMap.registerSprite(location);
+			ResourceLocation loc = ConstFunctionUtils.prefixResourceLocation("blocks/" + block.getTexture());
+			TextureAtlasSprite sprite = textureMap.registerSprite(loc);
 			BLOCKS_SPIRTES.put(block, sprite);
 		}
 	}
 
+	// FIXME: ModelBakeEvent or ModelRegistryEvent?
 	@SubscribeEvent
 	public void onModelBake(ModelBakeEvent event) {
 		IRegistry<ModelResourceLocation, IBakedModel> modelRegistry = event.getModelRegistry();
 		ModelLoader modelLoader = event.getModelLoader();
 
+		// Items
 		for (Map.Entry<ItemBase, Collection<TextureAtlasSprite>> entry : ITEMS_SPRITES.asMap().entrySet()) {
 			ItemBase item = entry.getKey();
 			Collection<TextureAtlasSprite> unsignedSprites = entry.getValue();
 			TextureAtlasSprite[] sprites = new TextureAtlasSprite[unsignedSprites.size()];
 			sprites = unsignedSprites.toArray(sprites);
 
-			SimpleItemModel itemModel = new SimpleItemModel(item.isAmbientOcclusion(), item.isGui3d(),
-					sprites);
-			ModelResourceLocation modelLocation = new ModelResourceLocation(item.getRegistryName(), "inventory");
-			modelRegistry.putObject(modelLocation, itemModel);
+			ItemBakedModel itemModel = new ItemBakedModel(item.isAmbientOcclusion(), item.isGui3d(), sprites);
+			ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
+			modelRegistry.putObject(loc, itemModel);
 		}
 
+		// Blocks
 		for (Map.Entry<BlockBase, TextureAtlasSprite> entry : BLOCKS_SPIRTES.entrySet()) {
 			BlockBase block = entry.getKey();
 			TextureAtlasSprite sprite = entry.getValue();
 
-			FlatBlockModelDefinition modelDefinition = new FlatBlockModelDefinition(block.getTexture(),
+			FlatModelBlockDefinition modelDefinition = new FlatModelBlockDefinition(block.getTexture(),
 					block.isUvLock(), block.isSmooth(), block.isGui3d());
-			ModelBlockDefinition definition = modelDefinition.getDefinition();
-			ModelResourceLocation normal = new ModelResourceLocation(block.getRegistryName(), "normal");
-			ModelResourceLocation inventory = new ModelResourceLocation(block.getRegistryName(), "inventory");
+			ModelBlockDefinition definition = modelDefinition.create();
+			ModelResourceLocation normalLoc = new ModelResourceLocation(block.getRegistryName(), "normal");
+			ModelResourceLocation inventoryLoc = new ModelResourceLocation(block.getRegistryName(), "inventory");
 
 			try {
 				Field field = modelLoader.getClass().getSuperclass()
@@ -97,21 +106,22 @@ public class ModelBakeHandler {
 				e.printStackTrace();
 			}
 
-			try {
-				modelRegistry.putObject(normal,
-						new FlatBlockstateModel(block.isAmbientOcclusion(), block.isGui3d(), sprite,
-								definition.getVariant(normal.getVariant())));
-				modelRegistry.putObject(inventory,
-						new FlatBlockstateModel(block.isAmbientOcclusion(), block.isGui3d(), sprite,
-								definition.getVariant(inventory.getVariant())));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			// Register Block model
+			BlockstateBakedModel normalModel = new BlockstateBakedModel(block.isAmbientOcclusion(), block.isGui3d(), sprite,
+					definition.getVariant(normalLoc.getVariant()));
+			modelRegistry.putObject(normalLoc, normalModel); // Normal (World) variant
+
+			BlockstateBakedModel inventoryModel = new BlockstateBakedModel(block.isAmbientOcclusion(), block.isGui3d(),
+					sprite, definition.getVariant(inventoryLoc.getVariant()));
+			modelRegistry.putObject(inventoryLoc, inventoryModel); // Inventory variant
 
 			// Register ItemBlock model
-			SimpleItemModel itemBlockModel = new SimpleItemModel(false, block.isGui3d(), sprite);
-			ModelResourceLocation modelLocation = new ModelResourceLocation(block.getRegistryName(), "inventory");
-			modelRegistry.putObject(modelLocation, itemBlockModel);
+			ItemBlockBakedModel itemBlockModel = new ItemBlockBakedModel(inventoryModel, block.isAmbientOcclusion(),
+					block.isGui3d(), sprite);
+			Item itemBlock = Item.getItemFromBlock(block);
+			modelRegistry.putObject(inventoryLoc, itemBlockModel);
+			ModelLoader.setCustomModelResourceLocation(itemBlock, 0, inventoryLoc);
+			ModelLoader.setCustomMeshDefinition(itemBlock, stack -> inventoryLoc);
 		}
 	}
 

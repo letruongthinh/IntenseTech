@@ -125,8 +125,8 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 
 	/* ITabSort */
 	@Override
-	public CreativeTabCategory getTabCategory() {
-		return CreativeTabCategory.TILE_BLOCK;
+	public int getCategory() {
+		return TILE_BLOCK;
 	}
 
 	/* Tile Stuffs */

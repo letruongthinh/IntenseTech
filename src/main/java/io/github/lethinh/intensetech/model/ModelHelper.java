@@ -26,7 +26,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class ModelHelper {
 
 	public static final ModelResourceLocation MISSING_MODEL = new ModelResourceLocation("builtin/missing", "missing");
@@ -35,17 +38,16 @@ public class ModelHelper {
 	private static final EnumFacing[] VERTICALS = { EnumFacing.WEST, EnumFacing.EAST };
 
 	/**
-	 * Get the view (rotations) of the model
+	 * Get the view (rotations) of the model (item)
 	 *
 	 * @param model
 	 * @param state
-	 * @param cameraTransformType
+	 * @param type
 	 * @return
 	 */
 	public static Pair<? extends IBakedModel, Matrix4f> handlePerspective(IBakedModel model, IModelState state,
-			ItemCameraTransforms.TransformType cameraTransformType) {
-		TRSRTransformation transform = state.apply(Optional.of(cameraTransformType))
-				.orElse(TRSRTransformation.identity());
+			ItemCameraTransforms.TransformType type) {
+		TRSRTransformation transform = state.apply(Optional.of(type)).orElse(TRSRTransformation.identity());
 
 		if (!transform.isIdentity()) {
 			return Pair.of(model, TRSRTransformation.blockCornerToCenter(transform).getMatrix());

@@ -38,10 +38,10 @@ public class PipeType<C extends Capability> {
 
 	/* Helpers */
 	/**
-	 * Check if tile entity (not instance-of {@link TileConnectedPipe}) can be used
-	 * with the pipe (External)
+	 * Check if the external tile entity (not instance-of {@link TileConnectedPipe})
+	 * can be used with the pipe
 	 *
-	 * @param tile   The TileEntity going to be checked
+	 * @param tile   The {@link TileEntity} going to be checked
 	 * @param facing The current side of the tile, when passes to this argument, it
 	 *               will become reversed (opposite)
 	 * @return

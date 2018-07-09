@@ -7,16 +7,12 @@ package io.github.lethinh.intensetech.block;
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.creativetab.ITabSort;
 import io.github.lethinh.intensetech.model.IBlockModelProperties;
-import io.github.lethinh.intensetech.model.IModelRegister;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.item.Item;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockBase extends Block implements ITabSort, IModelRegister, IBlockModelProperties {
+public class BlockBase extends Block implements ITabSort, IBlockModelProperties {
 
 	private final String name;
 
@@ -34,17 +30,8 @@ public class BlockBase extends Block implements ITabSort, IModelRegister, IBlock
 
 	/* ITabSort */
 	@Override
-	public CreativeTabCategory getTabCategory() {
-		return CreativeTabCategory.BLOCK;
-	}
-
-	/* IModelRegister */
-	@SideOnly(Side.CLIENT)
-	@Override
-	public void registerModel() {
-		ModelResourceLocation model = new ModelResourceLocation(getRegistryName(), "inventory");
-		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, model);
-		ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(this), stack -> model);
+	public int getCategory() {
+		return BLOCK;
 	}
 
 	/* IBlockModelProperties */
@@ -75,7 +62,7 @@ public class BlockBase extends Block implements ITabSort, IModelRegister, IBlock
 	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean isAmbientOcclusion() {
-		return false;
+		return true;
 	}
 
 }
