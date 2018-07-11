@@ -110,11 +110,6 @@ public abstract class TileMachineBase<I extends TileItemHandler> extends TileInv
 	}
 
 	@Override
-	public boolean cyclesRunFinished() {
-		return getWorkCycles() >= getTotalWorkCycles();
-	}
-
-	@Override
 	public void onWorkIdle() {
 	}
 

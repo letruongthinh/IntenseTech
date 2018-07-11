@@ -24,6 +24,14 @@ public class CraftMatrixItemHandler extends TileItemHandler {
 	}
 
 	/* Recipe Helpers */
+	public int getInputSlots() {
+		return getSlots() - 1;
+	}
+
+	public int getOutputSlot() {
+		return getSlots() - 1;
+	}
+
 	/**
 	 * Copied from {@link InventoryCrafting#getStackInRowAndColumn}.
 	 */

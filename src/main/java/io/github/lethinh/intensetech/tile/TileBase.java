@@ -109,7 +109,7 @@ public class TileBase extends TileEntity {
 	@Override
 	public boolean equals(Object o) {
 		return o instanceof TileEntity ? ((TileEntity) o).getPos().equals(pos)
-				&& ((TileEntity) o).getWorld().provider.getDimensionType() == world.provider.getDimensionType()
+				&& ((TileEntity) o).getWorld().provider.getDimensionType().equals(world.provider.getDimensionType())
 				: super.equals(o);
 	}
 

@@ -36,8 +36,8 @@ public class TileItemTransferPipe extends TileBasicItemPipe implements ITickable
 
 		for (TileConnectedPipe<Capability<IItemHandler>> pipe : adjacentPipes) {
 			EnumFacing facing = getNeighborFacing(pos, pipe.getPos());
-			IItemHandler src = pipe.getCapability(getPipeType().getType(), facing);
-			InventoryUtils.transferInventory(src, inventory);
+			IItemHandler dst = pipe.getCapability(getPipeType().getType(), facing);
+			InventoryUtils.transferInventory(inventory, dst);
 		}
 	}
 

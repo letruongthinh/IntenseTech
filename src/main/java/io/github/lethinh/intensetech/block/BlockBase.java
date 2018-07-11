@@ -7,6 +7,7 @@ package io.github.lethinh.intensetech.block;
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.creativetab.ITabSort;
 import io.github.lethinh.intensetech.model.IBlockModelProperties;
+import io.github.lethinh.intensetech.model.definition.FlatModelBlockDefinition;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraftforge.fml.relauncher.Side;
@@ -35,6 +36,12 @@ public class BlockBase extends Block implements ITabSort, IBlockModelProperties 
 	}
 
 	/* IBlockModelProperties */
+	@SideOnly(Side.CLIENT)
+	@Override
+	public FlatModelBlockDefinition getModelDefinition() {
+		return new FlatModelBlockDefinition(getTexture(), isUvLock(), isSmooth(), isGui3d());
+	}
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public String getTexture() {

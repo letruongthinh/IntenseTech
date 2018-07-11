@@ -15,14 +15,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.ImmutableList;
 
 import io.github.lethinh.intensetech.model.ModelHelper;
-import io.github.lethinh.intensetech.model.VariantHelper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.model.IModelState;
@@ -38,10 +36,6 @@ public class ItemBakedModel implements IBakedModel {
 	private final IModelState defaultState;
 	private final VertexFormat format;
 	private final TextureAtlasSprite[] textures;
-
-	public ItemBakedModel(boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite... textures) {
-		this(ambientOcclusion, gui3d, VariantHelper.DEFAULT_ITEM, DefaultVertexFormats.ITEM, textures);
-	}
 
 	public ItemBakedModel(boolean ambientOcclusion, boolean gui3d, IModelState defaultState, VertexFormat format,
 			TextureAtlasSprite... textures) {

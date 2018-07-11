@@ -30,13 +30,11 @@ public final class InventoryUtils {
 	}
 
 	public static boolean isFull(IItemHandler inventory) {
-		return isFull(inventory, false);
+		return getStacks(inventory).stream().allMatch(stack -> stack.getCount() == 64);
 	}
 
-	public static boolean isFull(IItemHandler inventory, boolean absolute) {
-		IntStream stream = IntStream.range(0, inventory.getSlots());
-		return absolute ? stream.allMatch(i -> !inventory.getStackInSlot(i).isEmpty())
-				: stream.anyMatch(i -> !inventory.getStackInSlot(i).isEmpty());
+	public static boolean isEmpty(IItemHandler inventory) {
+		return getStacks(inventory).stream().allMatch(stack -> stack.isEmpty() || stack.getCount() < 64);
 	}
 
 	@Nonnull
@@ -60,6 +58,10 @@ public final class InventoryUtils {
 
 	@Nonnull
 	public static ItemStack transferInventory(IItemHandler src, IItemHandler dst) {
+		if (isEmpty(src)) {
+			return ItemStack.EMPTY;
+		}
+
 		if (isFull(dst)) {
 			return ItemStack.EMPTY;
 		}

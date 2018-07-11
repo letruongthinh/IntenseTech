@@ -9,6 +9,7 @@ import java.util.EnumMap;
 import javax.vecmath.Vector3f;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraftforge.client.model.SimpleModelState;
@@ -36,19 +37,14 @@ public class VariantHelper {
 				.blockCenterToCorner(flipX.compose(TRSRTransformation.blockCornerToCenter(transform)).compose(flipX));
 	}
 
-	private static final ImmutableMap<String, IModelState> transforms;
 	public static final IModelState DEFAULT_BLOCK;
 	public static final IModelState DEFAULT_ITEM;
 	public static final IModelState DEFAULT_TOOL;
 
 	static {
-		ImmutableMap.Builder<String, IModelState> builder = ImmutableMap.builder();
-
-		builder.put("identity", TRSRTransformation.identity());
-
-		// block/block
+		// block/block (forge:default-block)
 		{
-			EnumMap<TransformType, TRSRTransformation> map = new EnumMap<>(TransformType.class);
+			EnumMap<TransformType, TRSRTransformation> map = Maps.newEnumMap(TransformType.class);
 			TRSRTransformation thirdperson = get(0, 2.5f, 0, 75, 45, 0, 0.375f);
 			map.put(TransformType.GUI, get(0, 0, 0, 30, 225, 0, 0.625f));
 			map.put(TransformType.GROUND, get(0, 3, 0, 0, 0, 0, 0.25f));
@@ -57,12 +53,12 @@ public class VariantHelper {
 			map.put(TransformType.THIRD_PERSON_LEFT_HAND, leftify(thirdperson));
 			map.put(TransformType.FIRST_PERSON_RIGHT_HAND, get(0, 0, 0, 0, 45, 0, 0.4f));
 			map.put(TransformType.FIRST_PERSON_LEFT_HAND, get(0, 0, 0, 0, 225, 0, 0.4f));
-			builder.put("forge:default-block", DEFAULT_BLOCK = new SimpleModelState(ImmutableMap.copyOf(map)));
+			DEFAULT_BLOCK = new SimpleModelState(ImmutableMap.copyOf(map));
 		}
 
-		// item/generated
+		// item/generated (forge:default-item)
 		{
-			EnumMap<TransformType, TRSRTransformation> map = new EnumMap<>(TransformType.class);
+			EnumMap<TransformType, TRSRTransformation> map = Maps.newEnumMap(TransformType.class);
 			TRSRTransformation thirdperson = get(0, 3, 1, 0, 0, 0, 0.55f);
 			TRSRTransformation firstperson = get(1.13f, 3.2f, 1.13f, 0, -90, 25, 0.68f);
 			map.put(TransformType.GROUND, get(0, 2, 0, 0, 0, 0, 0.5f));
@@ -72,12 +68,12 @@ public class VariantHelper {
 			map.put(TransformType.FIRST_PERSON_RIGHT_HAND, firstperson);
 			map.put(TransformType.FIRST_PERSON_LEFT_HAND, leftify(firstperson));
 			map.put(TransformType.FIXED, get(0, 0, 0, 0, 180, 0, 1));
-			builder.put("forge:default-item", DEFAULT_ITEM = new SimpleModelState(ImmutableMap.copyOf(map)));
+			DEFAULT_ITEM = new SimpleModelState(ImmutableMap.copyOf(map));
 		}
 
-		// item/handheld
+		// item/handheld (forge:default-tool)
 		{
-			EnumMap<TransformType, TRSRTransformation> map = new EnumMap<>(TransformType.class);
+			EnumMap<TransformType, TRSRTransformation> map = Maps.newEnumMap(TransformType.class);
 			map.put(TransformType.GROUND, get(0, 2, 0, 0, 0, 0, 0.5f));
 			map.put(TransformType.HEAD, get(0, 13, 7, 0, 180, 0, 1));
 			map.put(TransformType.THIRD_PERSON_RIGHT_HAND, get(0, 4, 0.5f, 0, -90, 55, 0.85f));
@@ -85,10 +81,8 @@ public class VariantHelper {
 			map.put(TransformType.FIRST_PERSON_RIGHT_HAND, get(1.13f, 3.2f, 1.13f, 0, -90, 25, 0.68f));
 			map.put(TransformType.FIRST_PERSON_LEFT_HAND, get(1.13f, 3.2f, 1.13f, 0, 90, -25, 0.68f));
 			map.put(TransformType.FIXED, get(0, 0, 0, 0, 180, 0, 1));
-			builder.put("forge:default-tool", DEFAULT_TOOL = new SimpleModelState(ImmutableMap.copyOf(map)));
+			DEFAULT_TOOL = new SimpleModelState(ImmutableMap.copyOf(map));
 		}
-
-		transforms = builder.build();
 	}
 
 }

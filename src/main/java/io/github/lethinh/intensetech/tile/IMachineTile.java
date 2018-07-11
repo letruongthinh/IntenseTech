@@ -7,7 +7,7 @@ package io.github.lethinh.intensetech.tile;
 import net.minecraft.tileentity.TileEntity;
 
 /**
- * Marker for {@link TileEntity} with automatic tasks and delay (machine)
+ * Marker for {@link TileEntity} with automated tasks and delay (machine)
  */
 public interface IMachineTile {
 
@@ -23,12 +23,8 @@ public interface IMachineTile {
 
 	void resetWorkCycles();
 
-	default boolean cyclesRunFinished() {
-		return getWorkCycles() >= getTotalWorkCycles();
-	}
-
 	/**
-	 * Called while work is idle or work cycles are increasing
+	 * Called while machine is idle or work cycles are increasing
 	 */
 	void onWorkIdle();
 

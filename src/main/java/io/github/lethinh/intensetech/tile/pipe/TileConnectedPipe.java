@@ -4,7 +4,6 @@
 
 package io.github.lethinh.intensetech.tile.pipe;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -42,12 +41,19 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 //				int tileIndex = tileTag.getInteger("TileIndex");
 //				TileEntity tile = TileEntity.create(world, compound);
 //
-//				if (adjacentTiles.contains(tile)) {
-//					continue;
-//				}
+//				for (TileEntity check : adjacentTiles) {
+//					if (check.getWorld().provider.getDimensionType().equals(tile.getWorld().provider.getDimensionType())
+//							&& check.getPos().equals(tile.getPos())) // Vanilla TileEntity
+//																		// doesn't
+//					// override equals
+//					// method
+//					{
+//						continue;
+//					}
 //
-//				if (tileIndex > 0 && tileIndex < adjacentTiles.size()) {
-//					adjacentTiles.set(tileIndex, tile);
+//					if (tileIndex > 0 && tileIndex < adjacentTiles.size()) {
+//						adjacentTiles.set(tileIndex, tile);
+//					}
 //				}
 //			}
 //		}
@@ -63,7 +69,7 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 //				int pipeIndex = pipeTag.getInteger("PipeIndex");
 //				TileConnectedPipe<C> pipe = (TileConnectedPipe<C>) TileEntity.create(world, pipeTag);
 //
-//				if (adjacentPipes.contains(pipe)) {
+//				if (adjacentPipes.contains(pipe) || pipe.adjacentPipes.contains(this)) {
 //					continue;
 //				}
 //
@@ -81,9 +87,10 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 //			NBTTagList tileTagList = new NBTTagList();
 //
 //			for (int i = 0; i < adjacentTiles.size(); ++i) {
+//				TileEntity tile = adjacentTiles.get(i);
 //				NBTTagCompound tileTag = new NBTTagCompound();
 //				tileTag.setInteger("TileIndex", i);
-//				adjacentTiles.get(i).writeToNBT(tileTag);
+//				tile.writeToNBT(tileTag);
 //				tileTagList.appendTag(tileTag);
 //			}
 //
@@ -92,16 +99,25 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 //		}
 
 		// Adjacent pipes
-		/*
-		 * if (!adjacentPipes.isEmpty()) { NBTTagList pipeTagList = new NBTTagList();
-		 *
-		 * for (int i = 0; i < adjacentPipes.size(); ++i) { NBTTagCompound pipeTag = new
-		 * NBTTagCompound(); pipeTag.setInteger("PipeIndex", i);
-		 * adjacentPipes.get(i).writeToNBT(pipeTag); pipeTagList.appendTag(pipeTag); }
-		 *
-		 * compound.setTag("Pipes", pipeTagList); compound.setInteger("PipesSize",
-		 * adjacentPipes.size()); }
-		 */
+//		if (!adjacentPipes.isEmpty()) {
+//			NBTTagList pipeTagList = new NBTTagList();
+//
+//			for (int i = 0; i < adjacentPipes.size(); ++i) {
+//				TileConnectedPipe<C> pipe = adjacentPipes.get(i);
+//
+//				if (pipe.adjacentPipes.contains(this)) {
+//					continue;
+//				}
+//
+//				NBTTagCompound pipeTag = new NBTTagCompound();
+//				pipeTag.setInteger("PipeIndex", i);
+//				pipe.writeToNBT(pipeTag);
+//				pipeTagList.appendTag(pipeTag);
+//			}
+//
+//			compound.setTag("Pipes", pipeTagList);
+//			compound.setInteger("PipesSize", adjacentPipes.size());
+//		}
 
 		return super.writeToNBT(compound);
 	}
@@ -116,6 +132,10 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 	/* Block Impl */
 	@Override
 	public void onNeighborBlockChange() {
+		if (world.isRemote) {
+			return;
+		}
+
 		PipeType<C> type = getPipeType();
 
 		for (EnumFacing facing : EnumFacing.values()) {
@@ -145,7 +165,7 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 		}
 
 		notifyBlockUpdate();
-		checkPipes();
+		// checkPipes();
 		markDirty();
 	}
 
@@ -155,30 +175,14 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 	}
 
 	/* Helpers */
-	protected boolean checkPipes() {
-		if (isTileInvalid() || adjacentPipes.isEmpty()) {
-			return false;
-		}
-
-		Collections.reverse(adjacentPipes); // First-in-first-out
-
-//		adjacentPipes.sort((o1, o2) -> {
-//			BlockPos pos1 = o1.getPos();
-//			BlockPos pos2 = o2.getPos();
-//			EnumFacing facing1 = getNeighborFacing(pos, pos1);
-//			EnumFacing facing2 = getNeighborFacing(pos, pos2);
+//	protected boolean checkPipes() {
+//		if (isTileInvalid() || adjacentPipes.isEmpty()) {
+//			return false;
+//		}
 //
-//			if (facing1.getOpposite().equals(facing2)) {
-//				return 1;
-//			} else if (facing2.getOpposite().equals(facing1)) {
-//				return -1;
-//			} else {
-//				return facing1.getIndex() - facing2.getIndex();
-//			}
-//		});
-
-		return true;
-	}
+//		Collections.reverse(adjacentPipes); // First-in-first-out
+//		return true;
+//	}
 
 	protected EnumFacing getNeighborFacing(BlockPos pos, BlockPos neighbor) {
 		int dx = pos.getX() - neighbor.getX();
@@ -204,6 +208,12 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase
 
 	public List<TileConnectedPipe<C>> getAdjacentPipes() {
 		return adjacentPipes;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return o instanceof TileConnectedPipe && ((TileConnectedPipe<C>) o).getRepresentModule() == getRepresentModule()
+				&& super.equals(o);
 	}
 
 }

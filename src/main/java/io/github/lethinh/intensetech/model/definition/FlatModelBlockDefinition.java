@@ -5,6 +5,7 @@
 package io.github.lethinh.intensetech.model.definition;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,62 +23,92 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.BlockStateLoader.SubModel;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * Wrapper for {@link ModelBlockDefinition}. Represent for a "cube-all", which
- * means same textures on all sides block.
+ * Wrapper for {@link ModelBlockDefinition}. Represent for a "cube-all"
+ * {@link ModelBlockDefinition}, with the same textures on all sides of block.
+ * By implementing this class, you can create your own blockstate or model
+ * without getting into {@link BlockstateModel} nor JSONs
  */
 @SideOnly(Side.CLIENT)
 public class FlatModelBlockDefinition {
 
-	private final String texture;
+	private final ResourceLocation parent;
+	private final Optional<IModelState> modelState;
+	private final String texture; // Without extension (.png, .jpg, ...)
 	private final boolean uvLock, smooth, gui3d;
+	private final int weight;
+	private final ImmutableMap<String, String> textures;
+	private final ImmutableMap<String, SubModel> parts;
+	private final ImmutableMap<String, String> customData;
 
+	// Default "cube-all" block constructor
 	public FlatModelBlockDefinition(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
+		this(new ResourceLocation("block/cube_all"),
+				Optional.of(TRSRTransformation.blockCenterToCorner(
+						VariantHelper.DEFAULT_BLOCK.apply(Optional.empty()).orElse(TRSRTransformation.identity()))),
+				texture, uvLock, smooth, gui3d, 1,
+				ImmutableMap.of("all", ConstFunctionUtils.prefixResourceLocation("blocks/" + texture).toString()),
+				ImmutableMap.of(), ImmutableMap.of());
+	}
+
+	public FlatModelBlockDefinition(ResourceLocation parent, Optional<IModelState> modelState, String texture,
+			boolean uvLock, boolean smooth, boolean gui3d, int weight, ImmutableMap<String, String> textures,
+			ImmutableMap<String, SubModel> parts, ImmutableMap<String, String> customData) {
+		this.parent = parent;
+		this.modelState = modelState;
 		this.texture = texture;
 		this.uvLock = uvLock;
 		this.smooth = smooth;
 		this.gui3d = gui3d;
+		this.weight = weight;
+		this.textures = textures;
+		this.parts = parts;
+		this.customData = customData;
 	}
 
-	public ModelBlockDefinition create() {
+	public ModelBlockDefinition parse() {
 		ResourceLocation blockstateLocation = ConstFunctionUtils
 				.prefixResourceLocation("blockstates/" + texture + ".json");
-		ResourceLocation parent = new ResourceLocation("block/cube_all");
-
-		Optional<IModelState> transform = Optional
-				.of(TRSRTransformation.blockCenterToCorner(
-						VariantHelper.DEFAULT_BLOCK.apply(Optional.empty()).orElse(TRSRTransformation.identity())));
 		List<Variant> mcVars = Lists.newArrayList();
 		Map<String, VariantList> variants = Maps.newLinkedHashMap();
-		int weight = 1;
 
 		try {
 			Class<?> clazz = Class.forName("net.minecraftforge.client.model.BlockStateLoader$ForgeVariant");
-			Constructor<?> constructor = clazz.getDeclaredConstructor(ResourceLocation.class,
+			Constructor<?> constructor = ReflectionHelper.findConstructor(clazz, ResourceLocation.class,
 					ResourceLocation.class, IModelState.class, boolean.class, boolean.class, boolean.class, int.class,
 					ImmutableMap.class, ImmutableMap.class, ImmutableMap.class);
-			constructor.setAccessible(true);
-			Variant var = (Variant) constructor.newInstance(
-					blockstateLocation, parent,
-					transform.orElse(TRSRTransformation.identity()), uvLock, smooth, gui3d, weight,
-					ImmutableMap.<String, String>of("all",
-							ConstFunctionUtils.prefixResourceLocation("blocks/" + texture).toString()),
-					ImmutableMap.<String, SubModel>of(), ImmutableMap.<String, String>of());
+			Variant var = (Variant) constructor.newInstance(blockstateLocation, parent,
+					modelState.orElse(TRSRTransformation.identity()), uvLock, smooth, gui3d, weight, textures, parts,
+					customData);
+
 			mcVars.add(var);
-		} catch (Throwable e) {
+			variants.put("normal", new VariantList(mcVars));
+			variants.put("inventory", new VariantList(mcVars));
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
 			e.printStackTrace();
 		}
-
-		variants.put("normal", new VariantList(mcVars));
-		variants.put("inventory", new VariantList(mcVars));
 
 		return new ModelBlockDefinition(variants, null);
 	}
 
+	public VariantList getVariantList(String variant) {
+		return parse().getVariant(variant);
+	}
+
 	/* Getters */
+	public ResourceLocation getParent() {
+		return parent;
+	}
+
+	public Optional<IModelState> getModelState() {
+		return modelState;
+	}
+
 	public String getTexture() {
 		return texture;
 	}
@@ -92,6 +123,22 @@ public class FlatModelBlockDefinition {
 
 	public boolean isGui3d() {
 		return gui3d;
+	}
+
+	public int getWeight() {
+		return weight;
+	}
+
+	public ImmutableMap<String, String> getTextures() {
+		return textures;
+	}
+
+	public ImmutableMap<String, SubModel> getParts() {
+		return parts;
+	}
+
+	public ImmutableMap<String, String> getCustomData() {
+		return customData;
 	}
 
 }

@@ -2,7 +2,7 @@
 * Created by Le Thinh
 */
 
-package io.github.lethinh.intensetech.inventory;
+package io.github.lethinh.intensetech.manager;
 
 import io.github.lethinh.intensetech.tile.IGuiTile;
 import net.minecraft.entity.player.EntityPlayer;

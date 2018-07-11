@@ -19,11 +19,13 @@ public class TileItemHandler extends ItemStackHandler {
 		this.tile = tile;
 	}
 
+	/* IItemHandler */
 	@Override
 	protected void onContentsChanged(int slot) {
 		tile.markDirty();
 	}
 
+	/* Helpers */
 	public TileBase getTile() {
 		return tile;
 	}

@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 import io.github.lethinh.intensetech.IntenseTech;
-import io.github.lethinh.intensetech.inventory.GuiHandler;
+import io.github.lethinh.intensetech.manager.GuiHandler;
 import io.github.lethinh.intensetech.tile.TileBase;
 import io.github.lethinh.intensetech.tile.TileInventoryBase;
 import net.minecraft.block.Block;
@@ -45,7 +45,11 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 			return;
 		}
 
-		((TileBase) tile).onNeighborTileChange(neighbor);
+		TileBase tileBase = (TileBase) tile;
+
+		if (!tileBase.isTileInvalid()) {
+			tileBase.onNeighborTileChange(neighbor);
+		}
 	}
 
 	@Override
@@ -56,7 +60,11 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 			return;
 		}
 
-		((TileBase) tile).onNeighborBlockChange();
+		TileBase tileBase = (TileBase) tile;
+
+		if (!tileBase.isTileInvalid()) {
+			tileBase.onNeighborBlockChange();
+		}
 	}
 
 	@Override
@@ -141,6 +149,6 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 		return createTileEntity((IBlockAccess) world, state);
 	}
 
-	public abstract TileEntity createTileEntity(IBlockAccess world, IBlockState state);
+	public abstract TE createTileEntity(IBlockAccess world, IBlockState state);
 
 }

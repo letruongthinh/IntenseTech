@@ -7,12 +7,15 @@ package io.github.lethinh.intensetech.tile;
 import io.github.lethinh.intensetech.capability.CraftMatrixItemHandler;
 import io.github.lethinh.intensetech.inventory.container.ContainerAtomicAssembler;
 import io.github.lethinh.intensetech.inventory.gui.GuiAtomicAssembler;
-import io.github.lethinh.intensetech.recipe.AtomicAssemblerShapedRecipe;
-import io.github.lethinh.intensetech.recipe.AtomicAssemblerShapelessRecipe;
+import io.github.lethinh.intensetech.manager.RecipesManager;
+import io.github.lethinh.intensetech.recipe.IAtomicAssemblerRecipe;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 public class TileAtomicAssembler extends TileMachineBase<CraftMatrixItemHandler> {
+
+	private IAtomicAssemblerRecipe curRecipe;
 
 	public TileAtomicAssembler() {
 		super(new CraftMatrixItemHandler(null, 5, 5), 100000, 2000, 2000, 100000);
@@ -21,47 +24,35 @@ public class TileAtomicAssembler extends TileMachineBase<CraftMatrixItemHandler>
 
 	/* Work */
 	@Override
+	public boolean canWork() {
+		return super.canWork() && (curRecipe = RecipesManager.findMatchingAtomicAssemblerRecipe(inventory)) != null;
+	}
+
+	@Override
 	public void doWork() {
-		// Get matching recipe from current items in craft matrix
-		AtomicAssemblerShapedRecipe shapedRecipe = AtomicAssemblerShapedRecipe.findMatchingRecipe(inventory);
-		AtomicAssemblerShapelessRecipe shapelessRecipe = AtomicAssemblerShapelessRecipe
-				.findMatchingRecipe(inventory);
+		// Remove items from the craft matrix
+		for (int i = 0; i < inventory.getInputSlots(); ++i) {
+			ItemStack stack = getStackInSlot(i);
 
-		if (shapedRecipe != null) {
-			// Remove items from the craft matrix
-			for (int i = 0; i < getSlots() - 1; ++i) {
-				if (getStackInSlot(i).isEmpty()) {
-					continue;
-				}
-
-				extractItem(i, 1);
+			if (stack.isEmpty()) {
+				continue;
 			}
 
-			// Add output
-			insertItem(25, shapedRecipe.getRecipeOutput().copy());
-		} else if (shapelessRecipe != null) {
-			// Remove items from the craft matrix
-			for (int i = 0; i < getSlots() - 1; ++i) {
-				if (getStackInSlot(i).isEmpty()) {
-					continue;
-				}
-
-				extractItem(i, 1);
-			}
-
-			// Add output
-			insertItem(25, shapelessRecipe.getRecipeOutput().copy());
+			extractItem(i, curRecipe.getMatchingStack(stack).getCount());
 		}
+
+		// Add output
+		insertItem(inventory.getOutputSlot(), curRecipe.getRecipeOutput().copy());
 	}
 
 	@Override
 	public int getTotalWorkCycles() {
-		return 20;
+		return 40;
 	}
 
 	@Override
 	public int getRequiredEnergy() {
-		return 1000;
+		return 100;
 	}
 
 	/* IGuiTile */
