@@ -1,0 +1,11 @@
+# Creative tab
+itemGroup.intensetech=Intense Tech
+
+# Blocks
+tile.intensetech.atomic_assembler.name=Atomic Assembler
+tile.intensetech.item_extractor.name=Item Extractor
+tile.intensetech.item_receiver.name=Item Receiver
+tile.intensetech.item_transfer_pipe.name=Item Transfer Pipe
+
+# Items
+item.intensetech.silver_ingot.name=Silver Ingot

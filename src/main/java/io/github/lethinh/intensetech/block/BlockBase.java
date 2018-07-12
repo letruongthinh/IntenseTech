@@ -7,7 +7,7 @@ package io.github.lethinh.intensetech.block;
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.creativetab.ITabSort;
 import io.github.lethinh.intensetech.model.IBlockModelProperties;
-import io.github.lethinh.intensetech.model.definition.FlatModelBlockDefinition;
+import io.github.lethinh.intensetech.model.definition.FlatBoxModelDefinition;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraftforge.fml.relauncher.Side;
@@ -21,7 +21,7 @@ public class BlockBase extends Block implements ITabSort, IBlockModelProperties 
 		super(materialIn);
 		this.name = name;
 		setRegistryName(IntenseTech.MOD_ID, name);
-		setUnlocalizedName(getRegistryName().toString());
+		setUnlocalizedName(IntenseTech.MOD_ID + '.' + name);
 		setCreativeTab(IntenseTech.tab);
 	}
 
@@ -38,8 +38,8 @@ public class BlockBase extends Block implements ITabSort, IBlockModelProperties 
 	/* IBlockModelProperties */
 	@SideOnly(Side.CLIENT)
 	@Override
-	public FlatModelBlockDefinition getModelDefinition() {
-		return new FlatModelBlockDefinition(getTexture(), isUvLock(), isSmooth(), isGui3d());
+	public FlatBoxModelDefinition getModelDefinition() {
+		return new FlatBoxModelDefinition(getTexture(), isUvLock(), isSmooth(), isGui3d());
 	}
 
 	@SideOnly(Side.CLIENT)

@@ -34,7 +34,6 @@ public class ContainerBase<TE extends TileBase> extends Container {
 	}
 
 	/* Container */
-	// Left shift-clicking stuff
 	@Nonnull
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
@@ -82,7 +81,7 @@ public class ContainerBase<TE extends TileBase> extends Container {
 				&& playerIn.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
 	}
 
-	/* Slot Wrappers */
+	/* Slot Helpers */
 	/**
 	 * Draws the inventory of the player.
 	 *
@@ -93,8 +92,8 @@ public class ContainerBase<TE extends TileBase> extends Container {
 	protected void addPlayerInventory(InventoryPlayer inventoryPlayer, int x, int y) {
 		// Main Inventory
 		// Basically, draw 3 rows, 9 columns, which means draw 27 slots
-		IntStream.range(0, 3).forEach(row -> IntStream.range(0, 9).forEach(column -> addSlotToContainer(
-				new Slot(inventoryPlayer, column + row * 9 + 9, x + column * 18, y + row * 18))));
+		IntStream.range(0, 3).forEach(col -> IntStream.range(0, 9).forEach(row -> addSlotToContainer(
+				new Slot(inventoryPlayer, row + col * 9 + 9, x + row * 18, y + col * 18))));
 
 		// Hotbar
 		IntStream.range(0, 9)

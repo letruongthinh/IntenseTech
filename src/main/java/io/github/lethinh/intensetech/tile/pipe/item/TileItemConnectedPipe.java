@@ -10,18 +10,17 @@ import javax.annotation.Nullable;
 import io.github.lethinh.intensetech.capability.TileItemHandler;
 import io.github.lethinh.intensetech.tile.pipe.PipeType;
 import io.github.lethinh.intensetech.tile.pipe.TileConnectedPipe;
-import io.github.lethinh.intensetech.utils.InventoryUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.IItemHandler;
 
-public abstract class TileBasicItemPipe extends TileConnectedPipe<Capability<IItemHandler>> {
+public abstract class TileItemConnectedPipe extends TileConnectedPipe<Capability<IItemHandler>> {
 
 	public final TileItemHandler inventory;
 
-	public TileBasicItemPipe(int size) {
+	public TileItemConnectedPipe(int size) {
 		this.inventory = new TileItemHandler(null, size);
 		inventory.setTile(this);
 	}
@@ -45,7 +44,7 @@ public abstract class TileBasicItemPipe extends TileConnectedPipe<Capability<IIt
 		return super.writeToNBT(compound);
 	}
 
-	/* Wrappers */
+	/* Inventory Helpers */
 	public int getFirstEmptySlot() {
 		return inventory.getFirstEmptySlot();
 	}
@@ -73,13 +72,9 @@ public abstract class TileBasicItemPipe extends TileConnectedPipe<Capability<IIt
 		return inventory.getSlots();
 	}
 
-	public boolean isFull() {
-		return InventoryUtils.isFull(inventory);
-	}
-
 	/* IPipeModule */
 	@Override
-	public PipeType<Capability<IItemHandler>> getPipeType() {
+	public PipeType<Capability<IItemHandler>> getType() {
 		return PipeType.ITEM;
 	}
 

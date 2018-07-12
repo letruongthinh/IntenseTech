@@ -32,7 +32,7 @@ public class TileAtomicAssembler extends TileMachineBase<CraftMatrixItemHandler>
 	public void doWork() {
 		// Remove items from the craft matrix
 		for (int i = 0; i < inventory.getInputSlots(); ++i) {
-			ItemStack stack = getStackInSlot(i);
+			ItemStack stack = inventory.getStackInSlot(i);
 
 			if (stack.isEmpty()) {
 				continue;

@@ -4,11 +4,12 @@
 
 package io.github.lethinh.intensetech.inventory.widget;
 
+import io.github.lethinh.intensetech.inventory.gui.GuiBase;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class Widget {
+public abstract class Widget {
 
 	private final double x, y, width, height;
 
@@ -19,6 +20,13 @@ public class Widget {
 		this.height = height;
 	}
 
+	public abstract void renderBackground(GuiBase parent, int mouseX, int mouseY, float partialTicks);
+
+	public void renderForeground(GuiBase parent, int mouseX, int mouseY) {
+
+	}
+
+	/* Getters */
 	public double getX() {
 		return x;
 	}

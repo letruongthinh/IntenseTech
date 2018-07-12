@@ -13,7 +13,6 @@ import com.google.common.collect.Lists;
 import io.github.lethinh.intensetech.capability.CraftMatrixItemHandler;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.block.Block;
-import net.minecraft.client.util.RecipeItemHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
@@ -47,29 +46,19 @@ public class AtomicAssemblerShapelessRecipe extends ShapelessOreRecipe implement
 	@Override
 	public boolean matches(CraftMatrixItemHandler itemHandler) {
 		int ingredientCount = 0;
-		RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
 		List<ItemStack> stacks = Lists.newArrayList();
 
-		for (int i = 0; i < itemHandler.getSlots(); ++i) {
+		for (int i = 0; i < itemHandler.getInputSlots(); ++i) {
 			ItemStack stack = itemHandler.getStackInSlot(i);
 
 			if (!stack.isEmpty()) {
 				++ingredientCount;
-
-				if (isSimple) {
-					recipeItemHelper.accountStack(stack, 1);
-				} else {
-					stacks.add(stack);
-				}
+				stacks.add(stack);
 			}
 		}
 
 		if (ingredientCount != input.size()) {
 			return false;
-		}
-
-		if (isSimple) {
-			return recipeItemHelper.canCraft(this, null);
 		}
 
 		return RecipeMatcher.findMatches(stacks, input) != null;

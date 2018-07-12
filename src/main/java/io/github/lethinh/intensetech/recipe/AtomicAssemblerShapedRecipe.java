@@ -60,7 +60,7 @@ public class AtomicAssemblerShapedRecipe extends ShapedOreRecipe implements IAto
 				continue;
 			}
 
-			return ingredient.getMatchingStacks()[i];
+			return ingredient.getMatchingStacks()[0];
 		}
 
 		return ItemStack.EMPTY;

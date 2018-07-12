@@ -4,21 +4,20 @@
 
 package io.github.lethinh.intensetech.block;
 
-import java.util.Random;
-import java.util.stream.IntStream;
-
 import javax.annotation.Nullable;
 
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.manager.GuiHandler;
 import io.github.lethinh.intensetech.tile.TileBase;
 import io.github.lethinh.intensetech.tile.TileInventoryBase;
+import io.github.lethinh.intensetech.utils.InventoryUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving.SpawnPlacementType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -28,6 +27,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
@@ -118,17 +118,17 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 			return;
 		}
 
-		if (!(tile instanceof TileInventoryBase)) {
+		if (!tile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
 			return;
 		}
 
-		IItemHandler itemHandler = ((TileInventoryBase) tile).inventory;
-		NonNullList<ItemStack> inventory = NonNullList.withSize(itemHandler.getSlots(), ItemStack.EMPTY);
-		IntStream.range(0, itemHandler.getSlots()).forEach(i -> inventory.set(i, itemHandler.getStackInSlot(i)));
-
+		IItemHandler inventory = ((TileInventoryBase) tile).inventory;
+		NonNullList<ItemStack> stacks = InventoryUtils.getStacks(inventory);
 		NBTTagCompound stackTag = new NBTTagCompound();
-		stackTag.setTag("BlockEntityTag", ItemStackHelper.saveAllItems(new NBTTagCompound(), inventory));
-		drops.add(new ItemStack(getItemDropped(state, new Random(), fortune), 1, damageDropped(state), stackTag));
+		stackTag.setTag("BlockEntityTag", ItemStackHelper.saveAllItems(new NBTTagCompound(), stacks));
+		ItemStack drop = new ItemStack(Item.getItemFromBlock(this), 1, damageDropped(state));
+		drop.setTagCompound(stackTag);
+		drops.add(drop);
 	}
 
 	/* ITabSort */

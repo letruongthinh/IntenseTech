@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.github.lethinh.intensetech.capability.TileItemHandler;
-import io.github.lethinh.intensetech.utils.InventoryUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -46,7 +45,7 @@ public class TileInventoryBase<I extends TileItemHandler> extends TileBase {
 		return super.writeToNBT(compound);
 	}
 
-	/* Wrappers */
+	/* Inventory Helpers */
 	public int getFirstEmptySlot() {
 		return inventory.getFirstEmptySlot();
 	}
@@ -72,10 +71,6 @@ public class TileInventoryBase<I extends TileItemHandler> extends TileBase {
 
 	public int getSlots() {
 		return inventory.getSlots();
-	}
-
-	public boolean isFull() {
-		return InventoryUtils.isFull(inventory);
 	}
 
 }

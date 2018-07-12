@@ -19,7 +19,7 @@ import io.github.lethinh.intensetech.manager.ItemsManager;
 import io.github.lethinh.intensetech.model.baked.BlockstateBakedModel;
 import io.github.lethinh.intensetech.model.baked.ItemBakedModel;
 import io.github.lethinh.intensetech.model.baked.ItemBlockBakedModel;
-import io.github.lethinh.intensetech.model.definition.FlatModelBlockDefinition;
+import io.github.lethinh.intensetech.model.definition.FlatBoxModelDefinition;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -91,7 +91,7 @@ public class ModelBakeHandler {
 			BlockBase block = entry.getKey();
 			TextureAtlasSprite sprite = entry.getValue();
 
-			FlatModelBlockDefinition modelDefinition = block.getModelDefinition();
+			FlatBoxModelDefinition modelDefinition = block.getModelDefinition();
 			ModelResourceLocation normalLoc = new ModelResourceLocation(block.getRegistryName(), "normal");
 			ModelResourceLocation inventoryLoc = new ModelResourceLocation(block.getRegistryName(), "inventory");
 

@@ -28,13 +28,13 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * Wrapper for {@link ModelBlockDefinition}. Represent for a "cube-all"
- * {@link ModelBlockDefinition}, with the same textures on all sides of block.
- * By implementing this class, you can create your own blockstate or model
- * without getting into {@link BlockstateModel} nor JSONs
+ * Wrapper for {@link ModelBlockDefinition}. Represent for a "cube-all" box,
+ * which means with the same textures on all sides of block. By implementing
+ * this class, you can create your own blockstate or model without getting into
+ * {@link BlockstateModel} nor JSONs
  */
 @SideOnly(Side.CLIENT)
-public class FlatModelBlockDefinition {
+public class FlatBoxModelDefinition {
 
 	private final ResourceLocation parent;
 	private final Optional<IModelState> modelState;
@@ -46,7 +46,7 @@ public class FlatModelBlockDefinition {
 	private final ImmutableMap<String, String> customData;
 
 	// Default "cube-all" block constructor
-	public FlatModelBlockDefinition(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
+	public FlatBoxModelDefinition(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
 		this(new ResourceLocation("block/cube_all"),
 				Optional.of(TRSRTransformation.blockCenterToCorner(
 						VariantHelper.DEFAULT_BLOCK.apply(Optional.empty()).orElse(TRSRTransformation.identity()))),
@@ -55,7 +55,7 @@ public class FlatModelBlockDefinition {
 				ImmutableMap.of(), ImmutableMap.of());
 	}
 
-	public FlatModelBlockDefinition(ResourceLocation parent, Optional<IModelState> modelState, String texture,
+	public FlatBoxModelDefinition(ResourceLocation parent, Optional<IModelState> modelState, String texture,
 			boolean uvLock, boolean smooth, boolean gui3d, int weight, ImmutableMap<String, String> textures,
 			ImmutableMap<String, SubModel> parts, ImmutableMap<String, String> customData) {
 		this.parent = parent;

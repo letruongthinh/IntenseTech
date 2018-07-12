@@ -12,6 +12,12 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+/**
+ * Determine and filter the {@link Capability} of pipes in their network, also
+ * uses for tracking pipe in {@link PipeTracker}
+ *
+ * @param <C> The capability type
+ */
 public class PipeType<C extends Capability> {
 
 	/* Default types */

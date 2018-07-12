@@ -13,10 +13,11 @@ public final class NBTUtils {
 
 	}
 
-	public static void writeBlockPos(NBTTagCompound compound, String key, BlockPos pos) {
+	public static NBTTagCompound writeBlockPos(NBTTagCompound compound, String key, BlockPos pos) {
 		compound.setInteger(key + "X", pos.getX());
 		compound.setInteger(key + "Y", pos.getY());
 		compound.setInteger(key + "Z", pos.getZ());
+		return compound;
 	}
 
 	public static BlockPos readBlockPos(NBTTagCompound compound, String key) {

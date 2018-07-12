@@ -97,7 +97,7 @@ public class TileBase extends TileEntity {
 
 	/* Helpers */
 	public boolean isTileInvalid() {
-		return !hasWorld() || isInvalid() || !world.isBlockLoaded(pos) || world.getTileEntity(pos) != this;
+		return !hasWorld() || isInvalid() || !world.isBlockLoaded(pos) || !world.getTileEntity(pos).equals(this);
 	}
 
 	protected void notifyBlockUpdate() {

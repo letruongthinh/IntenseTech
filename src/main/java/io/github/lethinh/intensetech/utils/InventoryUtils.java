@@ -34,7 +34,7 @@ public final class InventoryUtils {
 	}
 
 	public static boolean isEmpty(IItemHandler inventory) {
-		return getStacks(inventory).stream().allMatch(stack -> stack.isEmpty() || stack.getCount() < 64);
+		return getStacks(inventory).stream().anyMatch(stack -> stack.isEmpty() || stack.getCount() < 64);
 	}
 
 	@Nonnull
@@ -58,9 +58,9 @@ public final class InventoryUtils {
 
 	@Nonnull
 	public static ItemStack transferInventory(IItemHandler src, IItemHandler dst) {
-		if (isEmpty(src)) {
-			return ItemStack.EMPTY;
-		}
+//		if (isEmpty(src)) {
+//			return ItemStack.EMPTY;
+//		}
 
 		if (isFull(dst)) {
 			return ItemStack.EMPTY;

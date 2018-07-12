@@ -20,7 +20,7 @@ public class ItemBase extends Item implements ITabSort, IItemModelProperties {
 	public ItemBase(String name) {
 		this.name = name;
 		setRegistryName(IntenseTech.MOD_ID, name);
-		setUnlocalizedName(getRegistryName().toString());
+		setUnlocalizedName(IntenseTech.MOD_ID + '.' + name);
 		setCreativeTab(IntenseTech.tab);
 		setContainerItem(this);
 	}

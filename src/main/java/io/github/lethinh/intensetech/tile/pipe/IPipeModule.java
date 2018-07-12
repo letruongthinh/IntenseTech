@@ -13,8 +13,10 @@ public interface IPipeModule<C extends Capability> {
 	int INPUT = 1;
 	int OUTPUT = 2;
 
-	PipeType<C> getPipeType();
+	PipeType<C> getType();
 
 	int getRepresentModule();
+
+	PipeTracker<C> getTracker();
 
 }
