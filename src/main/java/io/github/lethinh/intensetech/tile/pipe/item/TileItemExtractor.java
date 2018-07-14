@@ -4,12 +4,9 @@
 
 package io.github.lethinh.intensetech.tile.pipe.item;
 
-import java.util.List;
-
 import io.github.lethinh.intensetech.inventory.container.ContainerItemExtractor;
 import io.github.lethinh.intensetech.inventory.gui.GuiItemExtractor;
 import io.github.lethinh.intensetech.tile.IGuiTile;
-import io.github.lethinh.intensetech.tile.pipe.PipeTracker;
 import io.github.lethinh.intensetech.tile.pipe.TileConnectedPipe;
 import io.github.lethinh.intensetech.utils.InventoryUtils;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,50 +24,36 @@ public class TileItemExtractor extends TileItemConnectedPipe implements ITickabl
 		super(10);
 	}
 
-	/* IPipeModule */
+	/* IPipe */
 	@Override
 	public int getRepresentModule() {
 		return INPUT;
 	}
 
-	/* ITickable */
 	@Override
-	public void update() {
-		Capability<IItemHandler> type = getType().getType();
-		PipeTracker<Capability<IItemHandler>> tracker = getTracker();
+	public boolean canTransferInput(BlockPos neighbor, EnumFacing facing) {
+		return true;
+	}
 
-		// External inventory - Input
-		List<BlockPos> adjacentTilesPos = getAdjacentTilesPos();
+	@Override
+	public boolean canTransferToNextPipe(TileConnectedPipe<Capability<IItemHandler>> pipe, BlockPos neighbor,
+			EnumFacing facing) {
+		IItemHandler dst = pipe.getCapability(getType().getType(), facing);
+		return pipe.getRepresentModule() == NORMAL && !InventoryUtils.isFull(dst);
+	}
 
-		if (!adjacentTilesPos.isEmpty()) {
-			for (BlockPos pos : adjacentTilesPos) {
-				TileEntity tile = world.getTileEntity(pos);
+	@Override
+	public void transferInput(BlockPos neighbor, EnumFacing facing) {
+		TileEntity tile = world.getTileEntity(neighbor);
+		IItemHandler src = tile.getCapability(getType().getType(), facing);
+		InventoryUtils.transferInventory(src, inventory);
+	}
 
-				if (tile == null) {
-					continue;
-				}
-
-				EnumFacing facing = getNeighborFacing(pos, getPos());
-				IItemHandler src = tile.getCapability(type, facing);
-
-				if (src == null) {
-					continue;
-				}
-
-				InventoryUtils.transferInventory(src, inventory);
-			}
-		}
-
-		// Input - Item transfer pipe
-		List<TileConnectedPipe<Capability<IItemHandler>>> adjacentPipes = tracker.trackNextPipeAllDirections();
-
-		if (!adjacentPipes.isEmpty()) {
-			for (TileConnectedPipe<Capability<IItemHandler>> pipe : adjacentPipes) {
-				EnumFacing facing = getNeighborFacing(pos, pipe.getPos());
-				IItemHandler dst = pipe.getCapability(type, facing);
-				InventoryUtils.transferInventory(inventory, dst);
-			}
-		}
+	@Override
+	public void transferToNextPipe(TileConnectedPipe<Capability<IItemHandler>> pipe, BlockPos neighbor,
+			EnumFacing facing) {
+		IItemHandler dst = pipe.getCapability(getType().getType(), facing);
+		InventoryUtils.transferInventory(inventory, dst);
 	}
 
 	/* IGuiTile */

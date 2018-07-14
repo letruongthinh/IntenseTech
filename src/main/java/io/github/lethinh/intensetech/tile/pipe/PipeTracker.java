@@ -10,10 +10,12 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
+import io.github.lethinh.intensetech.utils.NBTUtils;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -30,14 +32,12 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 
 	private final TileConnectedPipe<C> pipe;
 	private List<EnumFacing> trackDirections;
+	private List<BlockPos> externalTilesPos;
 
 	public PipeTracker(TileConnectedPipe<C> pipe) {
-		this(pipe, Lists.newArrayList());
-	}
-
-	public PipeTracker(TileConnectedPipe<C> pipe, List<EnumFacing> transferDirections) {
 		this.pipe = pipe;
-		this.trackDirections = transferDirections;
+		this.trackDirections = Lists.newArrayList();
+		this.externalTilesPos = Lists.newArrayList();
 	}
 
 	/* Track */
@@ -49,8 +49,7 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 			return Collections.EMPTY_LIST;
 		}
 
-		return trackDirections.stream().map(dir -> trackNextPipe(dir))
-				.filter(pipe -> pipe != null)
+		return trackDirections.stream().map(dir -> trackNextPipe(dir)).filter(pipe -> pipe != null)
 				.collect(Collectors.toList());
 	}
 
@@ -64,9 +63,11 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 			return null;
 		}
 
+		// Never happens case when next tracked pipe is non-instanceof
+		// TileConnectedPipe, see the onNeighborBlockChange method of it
 		TileConnectedPipe<C> ret = (TileConnectedPipe<C>) pipe.getWorld().getTileEntity(pipe.getPos().offset(dir));
 
-		if (ret == null || ret.isTileInvalid() || !ret.getType().equals(pipe.getType()) || ret.equals(pipe)) {
+		if (ret == null || ret.isTileInvalid() || !ret.getType().equals(pipe.getType())) {
 			return null;
 		}
 
@@ -106,6 +107,20 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 			compound.setInteger("PipeDirsSize", trackDirections.size());
 		}
 
+		if (!externalTilesPos.isEmpty()) {
+			NBTTagList tilePosList = new NBTTagList();
+
+			for (int i = 0; i < externalTilesPos.size(); ++i) {
+				NBTTagCompound tilePosTag = new NBTTagCompound();
+				tilePosTag.setInteger("TilePosIdx", i);
+				NBTUtils.writeBlockPos(tilePosTag, "TilePos", externalTilesPos.get(i));
+				tilePosList.appendTag(tilePosTag);
+			}
+
+			compound.setTag("TilesPos", tilePosList);
+			compound.setInteger("TilesPosSize", externalTilesPos.size());
+		}
+
 		return compound;
 	}
 
@@ -127,6 +142,19 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 				trackDirections.add(idx, dir);
 			}
 		}
+
+		NBTTagList tilePosList = nbt.getTagList("TilesPos", Constants.NBT.TAG_COMPOUND);
+
+		if (!tilePosList.hasNoTags()) {
+			externalTilesPos = Lists.newArrayListWithCapacity(nbt.getInteger("TilesPosSize"));
+
+			for (int i = 0; i < tilePosList.tagCount(); ++i) {
+				NBTTagCompound tilePosTag = tilePosList.getCompoundTagAt(i);
+				int idx = tilePosTag.getInteger("TilePosIdx");
+				BlockPos pos = NBTUtils.readBlockPos(tilePosTag, "TilePos");
+				externalTilesPos.add(idx, pos);
+			}
+		}
 	}
 
 	/* Getters & Setters */
@@ -142,12 +170,24 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 		this.trackDirections = trackDirections;
 	}
 
-	public void addTrackDirection(EnumFacing trackDirection) {
+	public boolean addTrackDirection(EnumFacing trackDirection) {
 		if (trackDirections.contains(trackDirection)) {
-			return;
+			return false;
 		}
 
-		trackDirections.add(trackDirection);
+		return trackDirections.add(trackDirection);
+	}
+
+	public List<BlockPos> getExternalTilesPos() {
+		return externalTilesPos;
+	}
+
+	public boolean addExternalTilePos(BlockPos pos) {
+		if (externalTilesPos.contains(pos)) {
+			return false;
+		}
+
+		return externalTilesPos.add(pos);
 	}
 
 }

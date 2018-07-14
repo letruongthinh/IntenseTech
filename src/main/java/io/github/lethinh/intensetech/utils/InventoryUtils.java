@@ -30,11 +30,11 @@ public final class InventoryUtils {
 	}
 
 	public static boolean isFull(IItemHandler inventory) {
-		return getStacks(inventory).stream().allMatch(stack -> stack.getCount() == 64);
+		return getStacks(inventory).stream().allMatch(stack -> !stack.isEmpty() || stack.getCount() == 64);
 	}
 
 	public static boolean isEmpty(IItemHandler inventory) {
-		return getStacks(inventory).stream().anyMatch(stack -> stack.isEmpty() || stack.getCount() < 64);
+		return getStacks(inventory).stream().allMatch(stack -> stack.isEmpty() || stack.getCount() < 64);
 	}
 
 	@Nonnull

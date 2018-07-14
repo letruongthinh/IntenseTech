@@ -6,73 +6,37 @@ package io.github.lethinh.intensetech.tile.pipe;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 import io.github.lethinh.intensetech.tile.TileBase;
-import io.github.lethinh.intensetech.utils.NBTUtils;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
 
 /**
  * Just like a multiblock implementation, core of the pipe transferring system
  *
  * @param <C> The {@link Capability} which this pipe will use to transfer
  */
-public abstract class TileConnectedPipe<C extends Capability> extends TileBase implements IPipeModule<C> {
+public abstract class TileConnectedPipe<C extends Capability> extends TileBase implements IPipe<C>, ITickable {
 
 	private final PipeTracker<C> tracker;
-	private List<BlockPos> adjacentTilesPos;
-	public boolean justTransfered = false;
+	public EnumFacing inputDirection;
 
 	public TileConnectedPipe() {
 		tracker = new PipeTracker<>(this);
-		adjacentTilesPos = Lists.newArrayList();
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		tracker.deserializeNBT(compound.getCompoundTag("Tracker"));
-
-		NBTTagList tilePosList = compound.getTagList("TilesPos", Constants.NBT.TAG_COMPOUND);
-
-		if (tilePosList.hasNoTags()) {
-			return;
-		}
-
-		adjacentTilesPos = Lists.newArrayListWithCapacity(compound.getInteger("TilesPosSize"));
-
-		for (int i = 0; i < tilePosList.tagCount(); ++i) {
-			NBTTagCompound tilePosTag = tilePosList.getCompoundTagAt(i);
-			int idx = tilePosTag.getInteger("TilePosIdx");
-			BlockPos pos = NBTUtils.readBlockPos(tilePosTag, "TilePos");
-			adjacentTilesPos.add(idx, pos);
-		}
+		tracker.deserializeNBT(compound.getCompoundTag("TrackData"));
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		compound.setTag("Tracker", tracker.serializeNBT());
-
-		if (!adjacentTilesPos.isEmpty()) {
-			NBTTagList tilePosList = new NBTTagList();
-
-			for (int i = 0; i < adjacentTilesPos.size(); ++i) {
-				NBTTagCompound tilePosTag = new NBTTagCompound();
-				tilePosTag.setInteger("TilePosIdx", i);
-				NBTUtils.writeBlockPos(tilePosTag, "TilePos", adjacentTilesPos.get(i));
-				tilePosList.appendTag(tilePosTag);
-			}
-
-			compound.setTag("TilesPos", tilePosList);
-			compound.setInteger("TilesPosSize", adjacentTilesPos.size());
-		}
-
+		compound.setTag("TrackData", tracker.serializeNBT());
 		return super.writeToNBT(compound);
 	}
 
@@ -80,7 +44,87 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 	public void invalidate() {
 		super.invalidate();
 		tracker.invalidate();
-		adjacentTilesPos.clear();
+	}
+
+	/* ITickable */
+	@Override
+	public void update() {
+		PipeType<C> pipeType = getType();
+		C type = pipeType.getType();
+
+		// Pipes
+		List<TileConnectedPipe<C>> pipes = tracker.trackNextPipeAllDirections();
+
+		if (!pipes.isEmpty()) {
+			for (TileConnectedPipe<C> pipe : pipes) {
+				if (pipe.isTileInvalid()) {
+					continue;
+				}
+
+				BlockPos pos = pipe.getPos();
+				EnumFacing facing = getNeighborFacing(getPos(), pos);
+
+				if (!canTransferToNextPipe(pipe, pos, facing)) {
+					continue;
+				}
+
+				transferToNextPipe(pipe, pos, facing);
+				pipe.markDirty();
+			}
+		}
+
+		// External tiles
+		List<BlockPos> externalTilesPos = tracker.getExternalTilesPos();
+
+		if (!externalTilesPos.isEmpty()) {
+			for (BlockPos pos : externalTilesPos) {
+				TileEntity tile = world.getTileEntity(pos);
+				EnumFacing facing = getNeighborFacing(getPos(), pos);
+
+				if (canTransferInput(pos, facing)) {
+					transferInput(pos, facing);
+					tile.markDirty();
+				} else if (canTransferOutput(pos, facing)) {
+					transferOutput(pos, facing);
+					tile.markDirty();
+				}
+			}
+		}
+
+		markDirty();
+	}
+
+	/* IPipe */
+	@Override
+	public PipeTracker<C> getTracker() {
+		return tracker;
+	}
+
+	@Override
+	public boolean canTransferInput(BlockPos neighbor, EnumFacing facing) {
+		return false;
+	}
+
+	@Override
+	public boolean canTransferOutput(BlockPos neighbor, EnumFacing facing) {
+		return false;
+	}
+
+	@Override
+	public boolean canTransferToNextPipe(TileConnectedPipe<C> pipe, BlockPos neighbor, EnumFacing facing) {
+		return false;
+	}
+
+	@Override
+	public void transferInput(BlockPos neighbor, EnumFacing facing) {
+	}
+
+	@Override
+	public void transferOutput(BlockPos neighbor, EnumFacing facing) {
+	}
+
+	@Override
+	public void transferToNextPipe(TileConnectedPipe<C> pipe, BlockPos neighbor, EnumFacing facing) {
 	}
 
 	/* Block Impl */
@@ -101,23 +145,42 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 				continue;
 			}
 
-			if (tile instanceof IPipeModule) {
+			if (tile instanceof IPipe) {
 				TileConnectedPipe<C> pipe = (TileConnectedPipe<C>) tile;
 
-				if (pipe.isTileInvalid()) {
+				if (pipe.isTileInvalid() || !type.equals(pipe.getType())) {
 					return;
 				}
 
+				if (pipe.getRepresentModule() == INPUT) {
+					inputDirection = facing.getOpposite();
+				} else if (pipe.inputDirection != null) {
+					BlockPos checkPos = pipe.getPos().offset(inputDirection);
+					TileEntity checkTile = world.getTileEntity(checkPos);
+
+					if (checkTile == null) {
+						for (EnumFacing checkSide : EnumFacing.values()) {
+							if (inputDirection.equals(checkSide)) {
+								continue;
+							}
+						}
+					} else {
+						inputDirection = pipe.inputDirection;
+					}
+				}
+
 				tracker.addTrackDirection(facing);
-			} else if (getRepresentModule() != NORMAL && type.acceptTile(tile, facing)) {
-				adjacentTilesPos.add(pos);
+			} else if (type.acceptTile(tile, facing)) {
+				tracker.addExternalTilePos(pos);
 			}
 		}
 
 		markDirty();
+
 	}
 
-	protected EnumFacing getNeighborFacing(BlockPos pos, BlockPos neighbor) {
+	/* Helpers */
+	public static EnumFacing getNeighborFacing(BlockPos pos, BlockPos neighbor) {
 		int dx = pos.getX() - neighbor.getX();
 
 		if (dx == 0) {
@@ -125,26 +188,16 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 
 			if (dz == 0) {
 				int dy = pos.getY() - neighbor.getY();
-				return dy > 0 ? EnumFacing.UP : EnumFacing.DOWN;
+				return dy > 0 ? EnumFacing.DOWN : EnumFacing.UP;
 			} else {
-				return dz > 0 ? EnumFacing.SOUTH : EnumFacing.NORTH;
+				return dz > 0 ? EnumFacing.NORTH : EnumFacing.SOUTH;
 			}
 		} else {
-			return dx > 0 ? EnumFacing.EAST : EnumFacing.WEST;
+			return dx > 0 ? EnumFacing.WEST : EnumFacing.EAST;
 		}
 	}
 
-	/* IPipeModule */
-	@Override
-	public PipeTracker<C> getTracker() {
-		return tracker;
-	}
-
-	/* Getters */
-	public List<BlockPos> getAdjacentTilesPos() {
-		return adjacentTilesPos;
-	}
-
+	/* Object */
 	@Override
 	public boolean equals(Object o) {
 		return o instanceof TileConnectedPipe && ((TileConnectedPipe) o).getRepresentModule() == getRepresentModule()

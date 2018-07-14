@@ -12,12 +12,10 @@ import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.block.BlockAtomicAssembler;
 import io.github.lethinh.intensetech.block.BlockBase;
 import io.github.lethinh.intensetech.block.BlockItemExtractor;
-import io.github.lethinh.intensetech.block.BlockItemReceiver;
 import io.github.lethinh.intensetech.block.BlockItemTransferPipe;
 import io.github.lethinh.intensetech.tile.TileAtomicAssembler;
 import io.github.lethinh.intensetech.tile.TileBase;
 import io.github.lethinh.intensetech.tile.pipe.item.TileItemExtractor;
-import io.github.lethinh.intensetech.tile.pipe.item.TileItemReceiver;
 import io.github.lethinh.intensetech.tile.pipe.item.TileItemTransferPipe;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.block.Block;
@@ -35,8 +33,6 @@ public class BlocksManager {
 
 	public static final BlockItemTransferPipe ITEM_TRANSFER_PIPE = null;
 
-	public static final BlockItemReceiver ITEM_RECEIVER = null;
-
 	public static final BlockAtomicAssembler ATOMIC_ASSEMBLER = null;
 
 	public static class RegistrationHandler {
@@ -47,7 +43,6 @@ public class BlocksManager {
 			// Register blocks
 			BLOCKS.add(new BlockItemExtractor());
 			BLOCKS.add(new BlockItemTransferPipe());
-			BLOCKS.add(new BlockItemReceiver());
 			BLOCKS.add(new BlockAtomicAssembler());
 
 			BLOCKS.forEach(event.getRegistry()::register);
@@ -65,7 +60,6 @@ public class BlocksManager {
 		private void registerTileEntities() {
 			registerTileEntity(TileItemExtractor.class, "item_extractor");
 			registerTileEntity(TileItemTransferPipe.class, "item_transfer_pipe");
-			registerTileEntity(TileItemReceiver.class, "item_receiver");
 			registerTileEntity(TileAtomicAssembler.class, "atomic_assembler");
 		}
 
