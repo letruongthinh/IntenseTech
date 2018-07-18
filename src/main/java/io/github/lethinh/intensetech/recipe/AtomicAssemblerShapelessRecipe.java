@@ -4,11 +4,10 @@
 
 package io.github.lethinh.intensetech.recipe;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-
-import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.capability.CraftMatrixItemHandler;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
@@ -46,7 +45,7 @@ public class AtomicAssemblerShapelessRecipe extends ShapelessOreRecipe implement
 	@Override
 	public boolean matches(CraftMatrixItemHandler itemHandler) {
 		int ingredientCount = 0;
-		List<ItemStack> stacks = Lists.newArrayList();
+		List<ItemStack> stacks = new ArrayList<>();
 
 		for (int i = 0; i < itemHandler.getInputSlots(); ++i) {
 			ItemStack stack = itemHandler.getStackInSlot(i);

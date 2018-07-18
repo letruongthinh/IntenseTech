@@ -4,6 +4,7 @@
 
 package io.github.lethinh.intensetech.model.baked;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.model.ModelHelper;
 import net.minecraft.block.state.IBlockState;
@@ -48,15 +48,16 @@ public class BlockstateBakedModel implements IBakedModel {
 	private final boolean ambientOcclusion, gui3d;
 	private final TextureAtlasSprite texture;
 	private final List<Variant> variants;
-	private final List<IModel> models;
+	private final List<IModel> modelInstances;
 	private final IModelState modelState;
 
-	public BlockstateBakedModel(boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite texture, VariantList variants) {
+	public BlockstateBakedModel(boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite texture,
+			VariantList variants) {
 		this.ambientOcclusion = ambientOcclusion;
 		this.gui3d = gui3d;
 		this.texture = texture;
 		this.variants = variants.getVariantList();
-		this.models = Lists.newArrayList();
+		this.modelInstances = new ArrayList<>();
 		ImmutableList.Builder<Pair<IModel, IModelState>> builder = ImmutableList.builder();
 
 		for (Variant var : this.variants) {
@@ -82,19 +83,19 @@ public class BlockstateBakedModel implements IBakedModel {
 				ModelLoaderRegistry.getModelOrMissing(location);
 			}
 
-			models.add(model);
+			modelInstances.add(model);
 
 			IModelState modelDefaultState = model.getDefaultState();
 			Preconditions.checkNotNull(modelDefaultState, "Model %s returned null as default state", loc);
 			builder.add(Pair.of(model, new ModelStateComposition(var.getState(), modelDefaultState)));
 		}
 
-		if (models.isEmpty()) // If all variants are missing, add one with the missing model and default
-								// rotation.
+		if (modelInstances.isEmpty()) // If all variants are missing, add one with the missing model and default
+		// rotation.
 		{
 			// FIXME: log this?
 			IModel missing = ModelLoaderRegistry.getMissingModel();
-			models.add(missing);
+			modelInstances.add(missing);
 			builder.add(Pair.of(missing, TRSRTransformation.identity()));
 		}
 
@@ -106,7 +107,7 @@ public class BlockstateBakedModel implements IBakedModel {
 		VertexFormat format = DefaultVertexFormats.ITEM; // Forge uses this, may be it's just simply brighter
 
 		if (variants.size() == 1) {
-			IModel model = models.get(0);
+			IModel model = modelInstances.get(0);
 			IBakedModel bakedModel = model.bake(MultiModelState.getPartState(modelState, model, 0), format,
 					ModelLoader.defaultTextureGetter());
 			return bakedModel.getQuads(blockState, side, rand);
@@ -115,7 +116,7 @@ public class BlockstateBakedModel implements IBakedModel {
 		WeightedBakedModel.Builder builder = new WeightedBakedModel.Builder();
 
 		for (int i = 0; i < variants.size(); ++i) {
-			IModel model = models.get(i);
+			IModel model = modelInstances.get(i);
 			IBakedModel bakedModel = model.bake(MultiModelState.getPartState(modelState, model, i), format,
 					ModelLoader.defaultTextureGetter());
 			builder.add(bakedModel, variants.get(i).getWeight());
@@ -152,6 +153,10 @@ public class BlockstateBakedModel implements IBakedModel {
 
 	public List<Variant> getVariants() {
 		return variants;
+	}
+
+	public List<IModel> getModelInstances() {
+		return modelInstances;
 	}
 
 	public IModelState getModelState() {

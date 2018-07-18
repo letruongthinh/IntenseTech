@@ -14,15 +14,17 @@ public interface IPipe<C extends Capability> {
 	int NORMAL = 0;
 	int INPUT = 1;
 
+	/* Properties */
 	PipeType<C> getType();
 
 	int getRepresentModule();
 
 	PipeTracker<C> getTracker();
 
-	boolean canTransferInput(BlockPos neighbor, EnumFacing facing);
+	/* Transfer */
+	boolean canInput(BlockPos neighbor, EnumFacing facing);
 
-	boolean canTransferOutput(BlockPos neighbor, EnumFacing facing);
+	boolean canOutput(BlockPos neighbor, EnumFacing facing);
 
 	boolean canTransferToNextPipe(TileConnectedPipe<C> pipe, BlockPos neighbor, EnumFacing facing);
 
@@ -31,5 +33,14 @@ public interface IPipe<C extends Capability> {
 	void transferOutput(BlockPos neighbor, EnumFacing facing);
 
 	void transferToNextPipe(TileConnectedPipe<C> pipe, BlockPos neighbor, EnumFacing facing);
+
+	/* Update */
+	long getUpdateHash();
+
+	int getProgress();
+
+	void setProgress(int progress);
+
+	int getTotalProgress();
 
 }

@@ -4,14 +4,15 @@
 
 package io.github.lethinh.intensetech.model;
 
-import io.github.lethinh.intensetech.model.definition.FlatBoxModelDefinition;
+import io.github.lethinh.intensetech.model.property.FlatBoxModelProperties;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public interface IBlockModelProperties {
 
 	@SideOnly(Side.CLIENT)
-	FlatBoxModelDefinition getModelDefinition();
+	FlatBoxModelProperties getBoxProperties(ModelLoader modelLoader);
 
 	@SideOnly(Side.CLIENT)
 	String getTexture();

@@ -2,31 +2,43 @@
 * Created by Le Thinh
 */
 
-package io.github.lethinh.intensetech.model;
+package io.github.lethinh.intensetech.manager;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.lwjgl.util.vector.Vector3f;
+
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.block.BlockBase;
 import io.github.lethinh.intensetech.item.ItemBase;
-import io.github.lethinh.intensetech.manager.BlocksManager;
-import io.github.lethinh.intensetech.manager.ItemsManager;
 import io.github.lethinh.intensetech.model.baked.BlockstateBakedModel;
 import io.github.lethinh.intensetech.model.baked.ItemBakedModel;
 import io.github.lethinh.intensetech.model.baked.ItemBlockBakedModel;
-import io.github.lethinh.intensetech.model.definition.FlatBoxModelDefinition;
+import io.github.lethinh.intensetech.model.property.FlatBoxModelProperties;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
+import net.minecraft.client.renderer.block.model.BlockFaceUV;
+import net.minecraft.client.renderer.block.model.BlockPart;
+import net.minecraft.client.renderer.block.model.BlockPartFace;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.Item;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -42,8 +54,14 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ModelBakeHandler {
 
 	private static final Multimap<ItemBase, TextureAtlasSprite> ITEMS_SPRITES = HashMultimap.create();
-	private static final Map<BlockBase, TextureAtlasSprite> BLOCKS_SPIRTES = Maps.newHashMap(); // TODO: Change to
+	private static final Map<BlockBase, TextureAtlasSprite> BLOCKS_SPIRTES = new HashMap<>(); // TODO: Change to
 																								// Multimap
+
+	// Pipes
+	public static final ResourceLocation PIPE_NORMAL_LOC = ConstFunctionUtils
+			.prefixResourceLocation("block/pipe_normal");
+	public static final ResourceLocation PIPE_PART_LOC = ConstFunctionUtils
+			.prefixResourceLocation("block/pipe_part");
 
 	@SubscribeEvent
 	public static void onPreTextureStitch(TextureStitchEvent.Pre event) {
@@ -66,9 +84,11 @@ public class ModelBakeHandler {
 		}
 	}
 
-	// FIXME: ModelBakeEvent or ModelRegistryEvent?
 	@SubscribeEvent
 	public static void onModelBake(ModelBakeEvent event) {
+		ModelLoader modelLoader = event.getModelLoader();
+
+		// Main models
 		IRegistry<ModelResourceLocation, IBakedModel> modelRegistry = event.getModelRegistry();
 
 		// Items
@@ -91,17 +111,17 @@ public class ModelBakeHandler {
 			BlockBase block = entry.getKey();
 			TextureAtlasSprite sprite = entry.getValue();
 
-			FlatBoxModelDefinition modelDefinition = block.getModelDefinition();
+			FlatBoxModelProperties properties = block.getBoxProperties(event.getModelLoader());
 			ModelResourceLocation normalLoc = new ModelResourceLocation(block.getRegistryName(), "normal");
 			ModelResourceLocation inventoryLoc = new ModelResourceLocation(block.getRegistryName(), "inventory");
 
 			// Register Block model
 			BlockstateBakedModel normalModel = new BlockstateBakedModel(block.isAmbientOcclusion(), block.isGui3d(),
-					sprite, modelDefinition.getVariantList(normalLoc.getVariant()));
+					sprite, properties.getVariantList(normalLoc.getVariant()));
 			modelRegistry.putObject(normalLoc, normalModel); // Normal (World) variant
 
 			BlockstateBakedModel inventoryModel = new BlockstateBakedModel(block.isAmbientOcclusion(), block.isGui3d(),
-					sprite, modelDefinition.getVariantList(inventoryLoc.getVariant()));
+					sprite, properties.getVariantList(inventoryLoc.getVariant()));
 			modelRegistry.putObject(inventoryLoc, inventoryModel); // Inventory variant
 
 			// Register ItemBlock model
@@ -111,6 +131,55 @@ public class ModelBakeHandler {
 			modelRegistry.putObject(inventoryLoc, itemBlockModel);
 			ModelLoader.setCustomModelResourceLocation(itemBlock, 0, inventoryLoc);
 			ModelLoader.setCustomMeshDefinition(itemBlock, stack -> inventoryLoc);
+		}
+	}
+
+	public static void constructParentPipeModels(ModelLoader modelLoader) {
+		// Parent models
+		List<BlockPart> blockPipeNormalParts = new ArrayList<>();
+		List<BlockPart> blockPipeParts = new ArrayList<>();
+
+		{
+			Vector3f from = new Vector3f(4F, 4F, 0F);
+			Vector3f to = new Vector3f(12F, 12F, 4F);
+			Map<EnumFacing, BlockPartFace> faces = new EnumMap<>(EnumFacing.class);
+
+			for (EnumFacing facing : EnumFacing.VALUES) {
+				BlockPartFace face = new BlockPartFace(null, -1, "#side", new BlockFaceUV(null, 0));
+				faces.put(facing, face);
+			}
+
+			blockPipeParts.add(new BlockPart(from, to, faces, null, true));
+		}
+
+		{
+			Vector3f from = new Vector3f(4F, 4F, 4F);
+			Vector3f to = new Vector3f(12F, 12F, 12F);
+			Map<EnumFacing, BlockPartFace> faces = new EnumMap<>(EnumFacing.class);
+
+			for (EnumFacing facing : EnumFacing.VALUES) {
+				BlockPartFace face = new BlockPartFace(null, -1, "#centre", new BlockFaceUV(null, 0));
+				faces.put(facing, face);
+			}
+
+			blockPipeNormalParts.add(new BlockPart(from, to, faces, null, true));
+		}
+
+		ModelBlock pipePart = new ModelBlock(new ResourceLocation("block/block"), blockPipeParts,
+				ImmutableMap.of("particle", "#side"), true, true,
+				ItemCameraTransforms.DEFAULT, ItemOverrideList.NONE.getOverrides());
+		ModelBlock pipeNormal = new ModelBlock(new ResourceLocation("block/block"), blockPipeNormalParts,
+				ImmutableMap.of("particle", "#centre"), true, true,
+				ItemCameraTransforms.DEFAULT, ItemOverrideList.NONE.getOverrides());
+
+		try {
+			Field field = modelLoader.getClass().getSuperclass().getDeclaredField("models");
+			field.setAccessible(true);
+			Map<ResourceLocation, ModelBlock> map = (Map<ResourceLocation, ModelBlock>) field.get(modelLoader);
+			map.put(PIPE_NORMAL_LOC, pipeNormal);
+			map.put(PIPE_PART_LOC, pipePart);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
 		}
 	}
 

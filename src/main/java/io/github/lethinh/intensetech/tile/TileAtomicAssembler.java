@@ -25,7 +25,7 @@ public class TileAtomicAssembler extends TileMachineBase<CraftMatrixItemHandler>
 	/* Work */
 	@Override
 	public boolean canWork() {
-		return super.canWork() && (curRecipe = RecipesManager.findMatchingAtomicAssemblerRecipe(inventory)) != null;
+		return super.canWork() && (curRecipe = RecipesManager.findAtomicAssemblerRecipe(inventory)) != null;
 	}
 
 	@Override

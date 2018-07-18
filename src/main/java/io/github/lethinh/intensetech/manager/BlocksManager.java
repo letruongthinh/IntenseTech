@@ -4,9 +4,8 @@
 
 package io.github.lethinh.intensetech.manager;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.block.BlockAtomicAssembler;
@@ -36,7 +35,7 @@ public class BlocksManager {
 	public static final BlockAtomicAssembler ATOMIC_ASSEMBLER = null;
 
 	public static class RegistrationHandler {
-		public static final List<BlockBase> BLOCKS = Lists.newArrayList();
+		public static final List<BlockBase> BLOCKS = new ArrayList<>();
 
 		@SubscribeEvent
 		public void registerBlocks(RegistryEvent.Register<Block> event) {

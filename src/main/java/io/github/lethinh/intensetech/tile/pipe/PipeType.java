@@ -4,6 +4,8 @@
 
 package io.github.lethinh.intensetech.tile.pipe;
 
+import java.util.Objects;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -58,7 +60,7 @@ public class PipeType<C extends Capability> {
 		// Let say I want to check if the 2nd block can be used with the pipe.
 		// So if I obtained the 2nd tile entity from the 1st one, to check the 2nd one,
 		// the facing is going to be reversed (opposite) of the 1st one
-		return !tile.isInvalid() && tile.hasCapability(type, facing.getOpposite());
+		return tile != null && !tile.isInvalid() && tile.hasCapability(type, facing.getOpposite());
 	}
 
 	/* Object */
@@ -67,6 +69,11 @@ public class PipeType<C extends Capability> {
 		return obj instanceof PipeType
 				? ((PipeType) obj).name.equalsIgnoreCase(name) && ((PipeType) obj).type.equals(type)
 				: super.equals(obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, type);
 	}
 
 }

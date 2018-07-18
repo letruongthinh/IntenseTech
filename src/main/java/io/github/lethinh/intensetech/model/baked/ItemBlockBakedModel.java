@@ -8,7 +8,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import io.github.lethinh.intensetech.model.VariantHelper;
+import io.github.lethinh.intensetech.model.StandardModelStates;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -35,7 +35,7 @@ public class ItemBlockBakedModel extends ItemBakedModel {
 
 	public ItemBlockBakedModel(IBakedModel parent, boolean ambientOcclusion, boolean gui3d,
 			TextureAtlasSprite... textures) {
-		super(ambientOcclusion, gui3d, VariantHelper.DEFAULT_BLOCK, DefaultVertexFormats.ITEM, textures);
+		super(ambientOcclusion, gui3d, StandardModelStates.DEFAULT_BLOCK, DefaultVertexFormats.ITEM, textures);
 		this.parent = parent;
 	}
 

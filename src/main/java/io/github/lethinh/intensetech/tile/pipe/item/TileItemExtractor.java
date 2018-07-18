@@ -31,7 +31,7 @@ public class TileItemExtractor extends TileItemConnectedPipe implements ITickabl
 	}
 
 	@Override
-	public boolean canTransferInput(BlockPos neighbor, EnumFacing facing) {
+	public boolean canInput(BlockPos neighbor, EnumFacing facing) {
 		return true;
 	}
 
@@ -39,7 +39,21 @@ public class TileItemExtractor extends TileItemConnectedPipe implements ITickabl
 	public boolean canTransferToNextPipe(TileConnectedPipe<Capability<IItemHandler>> pipe, BlockPos neighbor,
 			EnumFacing facing) {
 		IItemHandler dst = pipe.getCapability(getType().getType(), facing);
-		return pipe.getRepresentModule() == NORMAL && !InventoryUtils.isFull(dst);
+		boolean a = pipe.getType().equals(getType());
+		boolean b = pipe.getRepresentModule() == NORMAL;
+		boolean c = !InventoryUtils.isFull(dst);
+
+//		if (!a) {
+//			System.out.println("A " + pos.toString());
+//		}
+//		if (!b) {
+//			System.out.println("B " + pos.toString());
+//		}
+//		if (!c) {
+//			System.out.println("C " + pos.toString());
+//		}
+
+		return a && b && c;
 	}
 
 	@Override

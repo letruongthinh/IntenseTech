@@ -4,11 +4,10 @@
 
 package io.github.lethinh.intensetech.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-
-import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.capability.CraftMatrixItemHandler;
 import io.github.lethinh.intensetech.recipe.AtomicAssemblerShapedRecipe;
@@ -20,34 +19,31 @@ import net.minecraft.item.ItemStack;
 
 public class RecipesManager {
 
-	public static List<IAtomicAssemblerRecipe> atomicAssemblerRecipes;
+	public static final List<IAtomicAssemblerRecipe> ATOMIC_ASSEMBLER = new ArrayList<>();
 
 	public static void registerRecipes() {
-		// Register recipes
-		atomicAssemblerRecipes = Lists.newArrayList();
-
-		addAtomicAssemblerShapelessRecipe(new ItemStack(ItemsManager.SILVER_INGOT), Items.IRON_INGOT, Items.DIAMOND);
+		addAtomicAssemblerShapeless(new ItemStack(ItemsManager.SILVER_INGOT), Items.IRON_INGOT, Items.DIAMOND);
 	}
 
 	/* Atomic Assembler */
-	public static IAtomicAssemblerRecipe findMatchingAtomicAssemblerRecipe(CraftMatrixItemHandler itemHandler) {
-		return atomicAssemblerRecipes.stream().filter(recipe -> recipe.matches(itemHandler)).findFirst().orElse(null);
+	public static IAtomicAssemblerRecipe findAtomicAssemblerRecipe(CraftMatrixItemHandler itemHandler) {
+		return ATOMIC_ASSEMBLER.stream().filter(recipe -> recipe.matches(itemHandler)).findFirst().orElse(null);
 	}
 
-	public static void addAtomicAssemblerShapedRecipe(Object output, Object... recipe) {
-		addAtomicAssemblerShapedRecipe(OreDictUtils.getOreDictItemStack(output), recipe);
+	public static void addAtomicAssemblerShaped(Object output, Object... recipe) {
+		addAtomicAssemblerShaped(OreDictUtils.getOreDictItemStack(output), recipe);
 	}
 
-	public static void addAtomicAssemblerShapedRecipe(@Nonnull ItemStack output, Object... recipe) {
-		atomicAssemblerRecipes.add(new AtomicAssemblerShapedRecipe(output, recipe));
+	public static void addAtomicAssemblerShaped(@Nonnull ItemStack output, Object... recipe) {
+		ATOMIC_ASSEMBLER.add(new AtomicAssemblerShapedRecipe(output, recipe));
 	}
 
-	public static void addAtomicAssemblerShapelessRecipe(Object output, Object... recipe) {
-		addAtomicAssemblerShapelessRecipe(OreDictUtils.getOreDictItemStack(output), recipe);
+	public static void addAtomicAssemblerShapeless(Object output, Object... recipe) {
+		addAtomicAssemblerShapeless(OreDictUtils.getOreDictItemStack(output), recipe);
 	}
 
-	public static void addAtomicAssemblerShapelessRecipe(@Nonnull ItemStack output, Object... recipe) {
-		atomicAssemblerRecipes.add(new AtomicAssemblerShapelessRecipe(output, recipe));
+	public static void addAtomicAssemblerShapeless(@Nonnull ItemStack output, Object... recipe) {
+		ATOMIC_ASSEMBLER.add(new AtomicAssemblerShapelessRecipe(output, recipe));
 	}
 
 }

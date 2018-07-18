@@ -15,6 +15,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving.SpawnPlacementType;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.Item;
@@ -37,6 +38,22 @@ public abstract class BlockTileBase<TE extends TileBase> extends BlockBase {
 	}
 
 	/* Block */
+	@Override
+	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer,
+			ItemStack stack) {
+		TileEntity tile = worldIn.getTileEntity(pos);
+
+		if (!(tile instanceof TileBase)) {
+			return;
+		}
+
+		TileBase tileBase = (TileBase) tile;
+
+		if (!tileBase.isTileInvalid()) {
+			tileBase.onBlockPlacedBy(stack);
+		}
+	}
+
 	@Override
 	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
 		TileEntity tile = world.getTileEntity(pos);

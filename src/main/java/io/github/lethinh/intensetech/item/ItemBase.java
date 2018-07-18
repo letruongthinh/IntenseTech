@@ -7,7 +7,7 @@ package io.github.lethinh.intensetech.item;
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.creativetab.ITabSort;
 import io.github.lethinh.intensetech.model.IItemModelProperties;
-import io.github.lethinh.intensetech.model.VariantHelper;
+import io.github.lethinh.intensetech.model.StandardModelStates;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.fml.relauncher.Side;
@@ -39,7 +39,7 @@ public class ItemBase extends Item implements ITabSort, IItemModelProperties {
 	@SideOnly(Side.CLIENT)
 	@Override
 	public IModelState getDefaultState() {
-		return VariantHelper.DEFAULT_ITEM;
+		return StandardModelStates.DEFAULT_ITEM;
 	}
 
 	@SideOnly(Side.CLIENT)

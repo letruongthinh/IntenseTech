@@ -7,9 +7,10 @@ package io.github.lethinh.intensetech.block;
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.creativetab.ITabSort;
 import io.github.lethinh.intensetech.model.IBlockModelProperties;
-import io.github.lethinh.intensetech.model.definition.FlatBoxModelDefinition;
+import io.github.lethinh.intensetech.model.property.FlatBoxModelProperties;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -38,8 +39,8 @@ public class BlockBase extends Block implements ITabSort, IBlockModelProperties 
 	/* IBlockModelProperties */
 	@SideOnly(Side.CLIENT)
 	@Override
-	public FlatBoxModelDefinition getModelDefinition() {
-		return new FlatBoxModelDefinition(getTexture(), isUvLock(), isSmooth(), isGui3d());
+	public FlatBoxModelProperties getBoxProperties(ModelLoader modelLoader) {
+		return new FlatBoxModelProperties(getTexture(), isUvLock(), isSmooth(), isGui3d());
 	}
 
 	@SideOnly(Side.CLIENT)

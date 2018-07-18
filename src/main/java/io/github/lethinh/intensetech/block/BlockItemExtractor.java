@@ -8,8 +8,10 @@ import io.github.lethinh.intensetech.tile.pipe.item.TileItemExtractor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.items.IItemHandler;
 
-public class BlockItemExtractor extends BlockTileBase<TileItemExtractor> {
+public class BlockItemExtractor extends BlockConnectedPipe<TileItemExtractor, Capability<IItemHandler>> {
 
 	public BlockItemExtractor() {
 		super("item_extractor", Material.IRON);

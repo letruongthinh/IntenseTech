@@ -4,9 +4,8 @@
 
 package io.github.lethinh.intensetech.manager;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.IntenseTech;
 import io.github.lethinh.intensetech.item.ItemBase;
@@ -22,7 +21,7 @@ public class ItemsManager {
 	public static final ItemSilverIngot SILVER_INGOT = null;
 
 	public static class RegistrationHandler {
-		public static final List<ItemBase> ITEMS = Lists.newArrayList();
+		public static final List<ItemBase> ITEMS = new ArrayList<>();
 
 		@SubscribeEvent
 		public void registerBlocks(RegistryEvent.Register<Item> event) {

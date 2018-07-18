@@ -26,7 +26,7 @@ public class TileItemTransferPipe extends TileItemConnectedPipe implements ITick
 	}
 
 	@Override
-	public boolean canTransferOutput(BlockPos neighbor, EnumFacing facing) {
+	public boolean canOutput(BlockPos neighbor, EnumFacing facing) {
 		TileEntity tile = world.getTileEntity(neighbor);
 		IItemHandler dst = tile.getCapability(getType().getType(), facing);
 		return !InventoryUtils.isFull(dst);
@@ -36,7 +36,21 @@ public class TileItemTransferPipe extends TileItemConnectedPipe implements ITick
 	public boolean canTransferToNextPipe(TileConnectedPipe<Capability<IItemHandler>> pipe, BlockPos neighbor,
 			EnumFacing facing) {
 		IItemHandler dst = pipe.getCapability(getType().getType(), facing);
-		return pipe.getRepresentModule() == NORMAL && !InventoryUtils.isFull(dst);
+		boolean a = pipe.getType().equals(getType());
+		boolean b = pipe.getRepresentModule() == NORMAL;
+		boolean c = !InventoryUtils.isFull(dst);
+
+//		if (!a) {
+//			System.out.println("A " + pos.toString());
+//		}
+//		if (!b) {
+//			System.out.println("B " + pos.toString());
+//		}
+//		if (!c) {
+//			System.out.println("C " + pos.toString());
+//		}
+
+		return a && b;
 	}
 
 	@Override
@@ -50,7 +64,7 @@ public class TileItemTransferPipe extends TileItemConnectedPipe implements ITick
 	public void transferToNextPipe(TileConnectedPipe<Capability<IItemHandler>> pipe, BlockPos neighbor,
 			EnumFacing facing) {
 		IItemHandler dst = pipe.getCapability(getType().getType(), facing);
-		InventoryUtils.transferInventory(inventory, dst).isEmpty();
+		InventoryUtils.transferInventory(inventory, dst);
 	}
 
 }

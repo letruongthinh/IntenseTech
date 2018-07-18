@@ -4,11 +4,10 @@
 
 package io.github.lethinh.intensetech.inventory.gui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.collect.Lists;
 
 import io.github.lethinh.intensetech.inventory.container.ContainerBase;
 import io.github.lethinh.intensetech.inventory.widget.Widget;
@@ -35,7 +34,7 @@ public class GuiBase<TE extends TileBase, C extends ContainerBase<TE>> extends G
 	public GuiBase(C inventorySlotsIn, String guiName) {
 		super(inventorySlotsIn);
 		this.guiName = guiName;
-		this.widgets = Lists.newArrayList();
+		this.widgets = new ArrayList<>();
 		setGuiContainerSize(GuiContainerSize.DEFAULT);
 	}
 

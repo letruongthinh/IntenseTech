@@ -30,7 +30,7 @@ public final class InventoryUtils {
 	}
 
 	public static boolean isFull(IItemHandler inventory) {
-		return getStacks(inventory).stream().allMatch(stack -> !stack.isEmpty() || stack.getCount() == 64);
+		return getStacks(inventory).stream().allMatch(stack -> stack.getCount() == 64);
 	}
 
 	public static boolean isEmpty(IItemHandler inventory) {
@@ -66,30 +66,40 @@ public final class InventoryUtils {
 			return ItemStack.EMPTY;
 		}
 
-		int slot = IntStream.range(0, src.getSlots()).filter(i -> !src.getStackInSlot(i).isEmpty()).findFirst()
-				.orElse(-1);
+//		int slot = IntStream.range(0, src.getSlots()).filter(i -> !src.getStackInSlot(i).isEmpty()).findFirst()
+//				.orElse(-1);
+//
+//		if (slot == -1) {
+//			return ItemStack.EMPTY;
+//		}
 
-		if (slot == -1) {
-			return ItemStack.EMPTY;
+		for (int slot = 0; slot < src.getSlots(); ++slot) {
+			if (src.getStackInSlot(slot).isEmpty()) {
+				continue;
+			}
+
+			ItemStack extract = src.extractItem(slot, 1, false);
+
+			if (extract.isEmpty()) {
+				return ItemStack.EMPTY;
+			}
+
+			int insertSlot = getFirstEmptySlot(dst);
+
+			if (insertSlot != -1 && !dst.getStackInSlot(insertSlot).isEmpty()
+					&& !ItemStack.areItemsEqual(extract, dst.getStackInSlot(insertSlot))
+					&& !ItemStack.areItemStackTagsEqual(extract, dst.getStackInSlot(insertSlot))) {
+				insertSlot = getFirstEmptySlot(dst, true);
+			}
+
+			if (insertSlot == -1) {
+				return ItemStack.EMPTY;
+			}
+
+			return dst.insertItem(insertSlot, extract, false);
 		}
 
-		ItemStack extract = src.extractItem(slot, 1, false);
-
-		if (extract.isEmpty()) {
-			return ItemStack.EMPTY;
-		}
-
-		int emptySlot = getFirstEmptySlot(dst);
-
-		if (emptySlot == -1) {
-			return ItemStack.EMPTY;
-		}
-
-		if (!dst.getStackInSlot(emptySlot).isEmpty() && !extract.isItemEqual(dst.getStackInSlot(emptySlot))) {
-			emptySlot = getFirstEmptySlot(dst, true);
-		}
-
-		return dst.insertItem(emptySlot, extract, false);
+		return ItemStack.EMPTY;
 	}
 
 	public static int getFirstEmptySlot(IItemHandler inventory) {
@@ -108,8 +118,8 @@ public final class InventoryUtils {
 	 */
 	public static int getFirstEmptySlot(IItemHandler inventory, boolean absolute) {
 		return IntStream.range(0, inventory.getSlots())
-				.filter(i -> absolute && inventory.getStackInSlot(i).isEmpty()
-						|| inventory.getStackInSlot(i).getCount() < inventory.getSlotLimit(i))
+				.filter(i -> absolute ? inventory.getStackInSlot(i).isEmpty()
+						: inventory.getStackInSlot(i).getCount() < inventory.getSlotLimit(i))
 				.findFirst()
 				.orElse(-1);
 	}

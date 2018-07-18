@@ -19,7 +19,7 @@ public final class ConstFunctionUtils {
 	}
 
 	/* Constants */
-	public static final ResourceLocation EMPTY_RESOURCE_LOCATION = prefixResourceLocation("");
+	public static final ResourceLocation EMPTY_RESOURCE_LOCATION = new ResourceLocation("");
 
 	/* String Format Helper */
 	/**

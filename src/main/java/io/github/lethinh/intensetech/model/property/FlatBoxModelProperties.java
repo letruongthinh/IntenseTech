@@ -2,19 +2,20 @@
 * Created by Le Thinh
 */
 
-package io.github.lethinh.intensetech.model.definition;
+package io.github.lethinh.intensetech.model.property;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
-import io.github.lethinh.intensetech.model.VariantHelper;
+import io.github.lethinh.intensetech.model.StandardModelStates;
 import io.github.lethinh.intensetech.utils.ConstFunctionUtils;
 import net.minecraft.client.renderer.block.model.ModelBlockDefinition;
 import net.minecraft.client.renderer.block.model.Variant;
@@ -34,9 +35,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * {@link BlockstateModel} nor JSONs
  */
 @SideOnly(Side.CLIENT)
-public class FlatBoxModelDefinition {
+public class FlatBoxModelProperties {
 
 	private final ResourceLocation parent;
+	private final ResourceLocation blockstateLocation;
 	private final Optional<IModelState> modelState;
 	private final String texture; // Without extension (.png, .jpg, ...)
 	private final boolean uvLock, smooth, gui3d;
@@ -46,19 +48,23 @@ public class FlatBoxModelDefinition {
 	private final ImmutableMap<String, String> customData;
 
 	// Default "cube-all" block constructor
-	public FlatBoxModelDefinition(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
-		this(new ResourceLocation("block/cube_all"),
+	public FlatBoxModelProperties(String texture, boolean uvLock, boolean smooth, boolean gui3d) {
+		this(new ResourceLocation("block/cube_all"), ConstFunctionUtils
+				.prefixResourceLocation("blockstates/" + texture + ".json"),
 				Optional.of(TRSRTransformation.blockCenterToCorner(
-						VariantHelper.DEFAULT_BLOCK.apply(Optional.empty()).orElse(TRSRTransformation.identity()))),
+						StandardModelStates.DEFAULT_BLOCK.apply(Optional.empty())
+								.orElse(TRSRTransformation.identity()))),
 				texture, uvLock, smooth, gui3d, 1,
 				ImmutableMap.of("all", ConstFunctionUtils.prefixResourceLocation("blocks/" + texture).toString()),
 				ImmutableMap.of(), ImmutableMap.of());
 	}
 
-	public FlatBoxModelDefinition(ResourceLocation parent, Optional<IModelState> modelState, String texture,
-			boolean uvLock, boolean smooth, boolean gui3d, int weight, ImmutableMap<String, String> textures,
-			ImmutableMap<String, SubModel> parts, ImmutableMap<String, String> customData) {
+	public FlatBoxModelProperties(ResourceLocation parent, ResourceLocation blockstateLocation,
+			Optional<IModelState> modelState, String texture, boolean uvLock, boolean smooth, boolean gui3d, int weight,
+			ImmutableMap<String, String> textures, ImmutableMap<String, SubModel> parts,
+			ImmutableMap<String, String> customData) {
 		this.parent = parent;
+		this.blockstateLocation = blockstateLocation;
 		this.modelState = modelState;
 		this.texture = texture;
 		this.uvLock = uvLock;
@@ -71,29 +77,57 @@ public class FlatBoxModelDefinition {
 	}
 
 	public ModelBlockDefinition parse() {
+		return new ModelBlockDefinition(parseVariantMap(), null);
+	}
+
+	public Map<String, VariantList> parseVariantMap() {
+		List<Variant> mcVars = parseVariantList();
+
+		if (mcVars.isEmpty()) {
+			return Collections.EMPTY_MAP;
+		}
+
+		VariantList varList = new VariantList(mcVars);
+		Map<String, VariantList> variants = new LinkedHashMap<>();
+		variants.put("normal", varList);
+		variants.put("inventory", varList);
+		return variants;
+	}
+
+	public List<Variant> parseVariantList() {
 		ResourceLocation blockstateLocation = ConstFunctionUtils
 				.prefixResourceLocation("blockstates/" + texture + ".json");
-		List<Variant> mcVars = Lists.newArrayList();
-		Map<String, VariantList> variants = Maps.newLinkedHashMap();
+		List<Variant> mcVars = new ArrayList<>();
 
+		Variant var = constructSmartVariant(parent, blockstateLocation, modelState, texture, uvLock, smooth, gui3d,
+				weight, textures, parts, customData);
+
+		if (var == null) {
+			return Collections.EMPTY_LIST;
+		}
+
+		mcVars.add(var);
+		return mcVars;
+	}
+
+	public Variant constructSmartVariant(ResourceLocation parent, ResourceLocation blockstateLocation,
+			Optional<IModelState> modelState, String texture, boolean uvLock, boolean smooth, boolean gui3d, int weight,
+			ImmutableMap<String, String> textures, ImmutableMap<String, SubModel> parts,
+			ImmutableMap<String, String> customData) {
 		try {
 			Class<?> clazz = Class.forName("net.minecraftforge.client.model.BlockStateLoader$ForgeVariant");
 			Constructor<?> constructor = ReflectionHelper.findConstructor(clazz, ResourceLocation.class,
 					ResourceLocation.class, IModelState.class, boolean.class, boolean.class, boolean.class, int.class,
 					ImmutableMap.class, ImmutableMap.class, ImmutableMap.class);
-			Variant var = (Variant) constructor.newInstance(blockstateLocation, parent,
+			return (Variant) constructor.newInstance(blockstateLocation, parent,
 					modelState.orElse(TRSRTransformation.identity()), uvLock, smooth, gui3d, weight, textures, parts,
 					customData);
-
-			mcVars.add(var);
-			variants.put("normal", new VariantList(mcVars));
-			variants.put("inventory", new VariantList(mcVars));
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			e.printStackTrace();
+			return null;
 		}
 
-		return new ModelBlockDefinition(variants, null);
 	}
 
 	public VariantList getVariantList(String variant) {
@@ -103,6 +137,10 @@ public class FlatBoxModelDefinition {
 	/* Getters */
 	public ResourceLocation getParent() {
 		return parent;
+	}
+
+	public ResourceLocation getBlockstateLocation() {
+		return blockstateLocation;
 	}
 
 	public Optional<IModelState> getModelState() {

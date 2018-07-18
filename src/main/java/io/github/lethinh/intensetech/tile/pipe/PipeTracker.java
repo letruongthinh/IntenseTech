@@ -4,14 +4,17 @@
 
 package io.github.lethinh.intensetech.tile.pipe;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
-
+import io.github.lethinh.intensetech.utils.Commons;
 import io.github.lethinh.intensetech.utils.NBTUtils;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -30,21 +33,24 @@ import net.minecraftforge.common.util.INBTSerializable;
  */
 public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTagCompound> {
 
+	public static final String NBT_TRACK_DIRECTIONS = "TrackDirs";
+	public static final String NBT_EXTERNAL_TILES_POS = "TilesPos";
+
 	private final TileConnectedPipe<C> pipe;
-	private List<EnumFacing> trackDirections;
-	private List<BlockPos> externalTilesPos;
+	private CopyOnWriteArrayList<EnumFacing> trackDirections;
+	private CopyOnWriteArrayList<BlockPos> externalTilesPos;
 
 	public PipeTracker(TileConnectedPipe<C> pipe) {
 		this.pipe = pipe;
-		this.trackDirections = Lists.newArrayList();
-		this.externalTilesPos = Lists.newArrayList();
+		this.trackDirections = new CopyOnWriteArrayList<>();
+		this.externalTilesPos = new CopyOnWriteArrayList<>();
 	}
 
-	/* Track */
+	/* Tracking Helpers */
 	/**
 	 * @return pipes tracked in all {@code trackDirections}, contains no null pipes
 	 */
-	public List<TileConnectedPipe<C>> trackNextPipeAllDirections() {
+	public List<TileConnectedPipe<C>> trackNextPipesAllDirections() {
 		if (trackDirections.isEmpty()) {
 			return Collections.EMPTY_LIST;
 		}
@@ -63,50 +69,65 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 			return null;
 		}
 
-		// Never happens case when next tracked pipe is non-instanceof
-		// TileConnectedPipe, see the onNeighborBlockChange method of it
-		TileConnectedPipe<C> ret = (TileConnectedPipe<C>) pipe.getWorld().getTileEntity(pipe.getPos().offset(dir));
+		TileEntity tile = pipe.getWorld().getTileEntity(pipe.getPos().offset(dir));
 
-		if (ret == null || ret.isTileInvalid() || !ret.getType().equals(pipe.getType())) {
+		if (tile == null) {
+			// removeTrackDirection(dir);
+			return null;
+		}
+
+		if (!(tile instanceof IPipe)) {
+			return null;
+		}
+
+		TileConnectedPipe<C> ret = (TileConnectedPipe<C>) tile;
+
+		if (ret == null || ret.isTileInvalid() || !ret.getType().equals(pipe.getType()) || ret.equals(pipe)) {
 			return null;
 		}
 
 		return ret;
 	}
 
+	public boolean addTrackDirection(EnumFacing trackDirection) {
+		return Commons.addIfNotExists(trackDirections, trackDirection);
+	}
+
 	/**
-	 * @param dirToCheck The direction to be removed
+	 * @param trackDirection The direction to be removed
 	 * @return true if {@code dirToCheck} was matched and removed with any in
 	 *         {@code trackDirections}, otherwise false
 	 */
-	public boolean removeTrackDirection(EnumFacing dirToCheck) {
-		return !trackDirections.isEmpty() && trackDirections.removeIf(dir -> dir.equals(dirToCheck));
+	public boolean removeTrackDirection(EnumFacing trackDirection) {
+		return Commons.removeIfExists(trackDirections, trackDirection);
+	}
+
+	public boolean addExternalTilePos(BlockPos pos) {
+		return Commons.addIfNotExists(externalTilesPos, pos);
+	}
+
+	public boolean removeExternalTilePos(BlockPos pos) {
+		return Commons.removeIfExists(externalTilesPos, pos);
 	}
 
 	public void invalidate() {
 		trackDirections.clear();
+		externalTilesPos.clear();
 	}
 
 	/* INBTSerializable */
 	@Override
 	public NBTTagCompound serializeNBT() {
-		NBTTagCompound compound = new NBTTagCompound();
+		NBTTagCompound nbt = new NBTTagCompound();
 
+		// Track directions
 		if (!trackDirections.isEmpty()) {
-			NBTTagList pipePosTagList = new NBTTagList();
-
-			for (int i = 0; i < trackDirections.size(); ++i) {
-				EnumFacing dir = trackDirections.get(i);
-				NBTTagCompound pipePosTag = new NBTTagCompound();
-				pipePosTag.setInteger("PipeIdx", i);
-				pipePosTag.setInteger("PipeDir", dir.getIndex());
-				pipePosTagList.appendTag(pipePosTag);
-			}
-
-			compound.setTag("PipeDirs", pipePosTagList);
-			compound.setInteger("PipeDirsSize", trackDirections.size());
+			Integer[] tracksDirs = trackDirections.stream().map(EnumFacing::getIndex).toArray(Integer[]::new);
+			NBTTagIntArray trackDirsTag = new NBTTagIntArray(Commons.toUnboxedIntArray(tracksDirs));
+			nbt.setTag(NBT_TRACK_DIRECTIONS, trackDirsTag);
 		}
 
+		// External tiles
 		if (!externalTilesPos.isEmpty()) {
 			NBTTagList tilePosList = new NBTTagList();
 
@@ -117,11 +138,11 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 				tilePosList.appendTag(tilePosTag);
 			}
 
-			compound.setTag("TilesPos", tilePosList);
-			compound.setInteger("TilesPosSize", externalTilesPos.size());
+			nbt.setTag(NBT_EXTERNAL_TILES_POS, tilePosList);
+			nbt.setInteger(NBT_EXTERNAL_TILES_POS + "Size", externalTilesPos.size());
 		}
 
-		return compound;
+		return nbt;
 	}
 
 	@Override
@@ -130,23 +151,20 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 			return;
 		}
 
-		NBTTagList pipePosTagList = nbt.getTagList("PipeDirs", Constants.NBT.TAG_COMPOUND);
+		// Track directions
+		int[] trackDirs = nbt.getIntArray(NBT_TRACK_DIRECTIONS);
 
-		if (!pipePosTagList.hasNoTags()) {
-			trackDirections = Lists.newArrayListWithCapacity(nbt.getInteger("PipeDirsSize"));
-
-			for (int i = 0; i < pipePosTagList.tagCount(); ++i) {
-				NBTTagCompound pipePosTag = pipePosTagList.getCompoundTagAt(i);
-				int idx = pipePosTag.getInteger("PipeIdx");
-				EnumFacing dir = EnumFacing.values()[pipePosTag.getInteger("PipeDir")];
-				trackDirections.add(idx, dir);
-			}
+		if (trackDirs.length != 0) {
+			EnumFacing[] dirs = Arrays.stream(trackDirs).mapToObj(i -> EnumFacing.getFront(i))
+					.toArray(EnumFacing[]::new);
+			trackDirections = new CopyOnWriteArrayList<>(dirs);
 		}
 
-		NBTTagList tilePosList = nbt.getTagList("TilesPos", Constants.NBT.TAG_COMPOUND);
+		// External tiles
+		NBTTagList tilePosList = nbt.getTagList(NBT_EXTERNAL_TILES_POS, Constants.NBT.TAG_COMPOUND);
 
 		if (!tilePosList.hasNoTags()) {
-			externalTilesPos = Lists.newArrayListWithCapacity(nbt.getInteger("TilesPosSize"));
+			externalTilesPos.clear();
 
 			for (int i = 0; i < tilePosList.tagCount(); ++i) {
 				NBTTagCompound tilePosTag = tilePosList.getCompoundTagAt(i);
@@ -157,37 +175,34 @@ public class PipeTracker<C extends Capability> implements INBTSerializable<NBTTa
 		}
 	}
 
-	/* Getters & Setters */
+	/* Object */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof PipeTracker) {
+			PipeTracker test = (PipeTracker) obj;
+			return pipe.equals(test.pipe) && trackDirections.equals(test.trackDirections)
+					&& externalTilesPos.equals(test.externalTilesPos);
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(pipe, trackDirections, externalTilesPos);
+	}
+
+	/* Getters */
 	public TileConnectedPipe<C> getPipe() {
 		return pipe;
 	}
 
-	public List<EnumFacing> getTrackDirections() {
+	public CopyOnWriteArrayList<EnumFacing> getTrackDirections() {
 		return trackDirections;
 	}
 
-	public void setTrackDirections(List<EnumFacing> trackDirections) {
-		this.trackDirections = trackDirections;
-	}
-
-	public boolean addTrackDirection(EnumFacing trackDirection) {
-		if (trackDirections.contains(trackDirection)) {
-			return false;
-		}
-
-		return trackDirections.add(trackDirection);
-	}
-
-	public List<BlockPos> getExternalTilesPos() {
+	public CopyOnWriteArrayList<BlockPos> getExternalTilesPos() {
 		return externalTilesPos;
-	}
-
-	public boolean addExternalTilePos(BlockPos pos) {
-		if (externalTilesPos.contains(pos)) {
-			return false;
-		}
-
-		return externalTilesPos.add(pos);
 	}
 
 }

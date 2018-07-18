@@ -5,6 +5,7 @@
 package io.github.lethinh.intensetech.tile.pipe;
 
 import java.util.List;
+import java.util.Objects;
 
 import io.github.lethinh.intensetech.tile.TileBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -23,27 +24,43 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 
 	private final PipeTracker<C> tracker;
 	public EnumFacing inputDirection;
+	private long lastUpdateHash = 0L;
+	private int progress;
 
 	public TileConnectedPipe() {
 		tracker = new PipeTracker<>(this);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound compound) {
-		super.readFromNBT(compound);
-		tracker.deserializeNBT(compound.getCompoundTag("TrackData"));
+	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+		compound.setTag("TrackData", tracker.serializeNBT());
+		compound.setLong("LastUpdateHash", lastUpdateHash);
+		return super.writeToNBT(compound);
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		compound.setTag("TrackData", tracker.serializeNBT());
-		return super.writeToNBT(compound);
+	public void readFromNBT(NBTTagCompound compound) {
+		super.readFromNBT(compound);
+		tracker.deserializeNBT(compound.getCompoundTag("TrackData"));
+		lastUpdateHash = compound.getLong("LastUpdateHash");
 	}
 
 	@Override
 	public void invalidate() {
 		super.invalidate();
 		tracker.invalidate();
+	}
+
+	// Mark dirty can be convenient, but can cause further FPS drop, so check for
+	// the tile if it has changed then perform
+	@Override
+	public void markDirty() {
+		if (lastUpdateHash == getUpdateHash()) {
+			return;
+		}
+
+		super.markDirty();
+		lastUpdateHash = getUpdateHash();
 	}
 
 	/* ITickable */
@@ -53,11 +70,11 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 		C type = pipeType.getType();
 
 		// Pipes
-		List<TileConnectedPipe<C>> pipes = tracker.trackNextPipeAllDirections();
+		List<TileConnectedPipe<C>> pipes = tracker.trackNextPipesAllDirections();
 
 		if (!pipes.isEmpty()) {
 			for (TileConnectedPipe<C> pipe : pipes) {
-				if (pipe.isTileInvalid()) {
+				if (pipe.equals(this) || pipe.isTileInvalid()) {
 					continue;
 				}
 
@@ -68,8 +85,13 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 					continue;
 				}
 
+				if (++progress < getTotalProgress()) {
+					return;
+				}
+
 				transferToNextPipe(pipe, pos, facing);
 				pipe.markDirty();
+				setProgress(0);
 			}
 		}
 
@@ -79,15 +101,33 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 		if (!externalTilesPos.isEmpty()) {
 			for (BlockPos pos : externalTilesPos) {
 				TileEntity tile = world.getTileEntity(pos);
+
+				if (tile == null) {
+					tracker.removeExternalTilePos(pos);
+					continue;
+				}
+
+				if (tile instanceof IPipe) {
+					continue;
+				}
+
 				EnumFacing facing = getNeighborFacing(getPos(), pos);
 
-				if (canTransferInput(pos, facing)) {
-					transferInput(pos, facing);
-					tile.markDirty();
-				} else if (canTransferOutput(pos, facing)) {
-					transferOutput(pos, facing);
-					tile.markDirty();
+				if (!pipeType.acceptTile(tile, facing)) {
+					continue;
 				}
+
+				if (++progress < getTotalProgress()) {
+					return;
+				}
+
+				if (canInput(pos, facing)) {
+					transferInput(pos, facing);
+				} else if (canOutput(pos, facing)) {
+					transferOutput(pos, facing);
+				}
+
+				setProgress(0);
 			}
 		}
 
@@ -101,12 +141,12 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 	}
 
 	@Override
-	public boolean canTransferInput(BlockPos neighbor, EnumFacing facing) {
+	public boolean canInput(BlockPos neighbor, EnumFacing facing) {
 		return false;
 	}
 
 	@Override
-	public boolean canTransferOutput(BlockPos neighbor, EnumFacing facing) {
+	public boolean canOutput(BlockPos neighbor, EnumFacing facing) {
 		return false;
 	}
 
@@ -127,6 +167,26 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 	public void transferToNextPipe(TileConnectedPipe<C> pipe, BlockPos neighbor, EnumFacing facing) {
 	}
 
+	@Override
+	public long getUpdateHash() {
+		return Objects.hash(getType(), tracker);
+	}
+
+	@Override
+	public int getProgress() {
+		return progress;
+	}
+
+	@Override
+	public void setProgress(int progress) {
+		this.progress = progress;
+	}
+
+	@Override
+	public int getTotalProgress() {
+		return 0;
+	}
+
 	/* Block Impl */
 	@Override
 	public void onNeighborBlockChange() {
@@ -140,11 +200,6 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 			BlockPos pos = getPos().offset(facing);
 			TileEntity tile = world.getTileEntity(pos);
 
-			if (tile == null) {
-				tracker.removeTrackDirection(facing);
-				continue;
-			}
-
 			if (tile instanceof IPipe) {
 				TileConnectedPipe<C> pipe = (TileConnectedPipe<C>) tile;
 
@@ -153,34 +208,28 @@ public abstract class TileConnectedPipe<C extends Capability> extends TileBase i
 				}
 
 				if (pipe.getRepresentModule() == INPUT) {
-					inputDirection = facing.getOpposite();
+					inputDirection = facing;
 				} else if (pipe.inputDirection != null) {
-					BlockPos checkPos = pipe.getPos().offset(inputDirection);
-					TileEntity checkTile = world.getTileEntity(checkPos);
-
-					if (checkTile == null) {
-						for (EnumFacing checkSide : EnumFacing.values()) {
-							if (inputDirection.equals(checkSide)) {
-								continue;
-							}
-						}
-					} else {
-						inputDirection = pipe.inputDirection;
-					}
+					inputDirection = pipe.inputDirection.equals(facing) ? pipe.inputDirection
+							: getNeighborFacing(getPos(), pos);
 				}
 
-				tracker.addTrackDirection(facing);
+				if (inputDirection == null || !facing.equals(inputDirection) || getRepresentModule() == INPUT) {
+					tracker.addTrackDirection(facing);
+
+					// Check for unorderly or unchecked adjacent pipe
+					pipe.tracker.addTrackDirection(facing);
+				}
 			} else if (type.acceptTile(tile, facing)) {
 				tracker.addExternalTilePos(pos);
 			}
 		}
 
 		markDirty();
-
 	}
 
 	/* Helpers */
-	public static EnumFacing getNeighborFacing(BlockPos pos, BlockPos neighbor) {
+	private EnumFacing getNeighborFacing(BlockPos pos, BlockPos neighbor) {
 		int dx = pos.getX() - neighbor.getX();
 
 		if (dx == 0) {
