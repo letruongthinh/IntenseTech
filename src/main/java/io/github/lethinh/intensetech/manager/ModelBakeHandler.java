@@ -88,6 +88,8 @@ public class ModelBakeHandler {
 	public static void onModelBake(ModelBakeEvent event) {
 		ModelLoader modelLoader = event.getModelLoader();
 
+		constructParentPipeModels(modelLoader);
+		
 		// Main models
 		IRegistry<ModelResourceLocation, IBakedModel> modelRegistry = event.getModelRegistry();
 
@@ -134,7 +136,7 @@ public class ModelBakeHandler {
 		}
 	}
 
-	public static void constructParentPipeModels(ModelLoader modelLoader) {
+	private static void constructParentPipeModels(ModelLoader modelLoader) {
 		// Parent models
 		List<BlockPart> blockPipeNormalParts = new ArrayList<>();
 		List<BlockPart> blockPipeParts = new ArrayList<>();
